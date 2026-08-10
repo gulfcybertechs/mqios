@@ -9,7 +9,7 @@ struct TajweedExView: View {
     @State var player = Player()
     @State var audioHelper: AudioHelper = AudioHelper(player: .constant(Player()))
     @Environment(\.dismiss) private var dismiss
-    
+    @AppStorage("language") var currentLanguage = getLanguage()
     @State var safeArea = UIApplication.shared.firstKeyWindow?.safeAreaInsets
     
     var body: some View {
@@ -61,64 +61,29 @@ struct TajweedExView: View {
                         }
                         else {
                             
-                            ScrollView(.horizontal) {
+                            ScrollViewReader { scrollView1 in
                                 
-                                LazyVGrid(columns: [GridItem(.adaptive(minimum: 2000), spacing: itemSpacing, alignment: .leading)], spacing: 0) {
+                                ScrollView(.horizontal) {
                                     
-                                    if (mvm.lessonSelected.Number == 1 ||
-                                        mvm.lessonSelected.Number == 2 ||
-                                        mvm.lessonSelected.Number == 3 ||
-                                        mvm.lessonSelected.Number == 4 ||
-                                        mvm.lessonSelected.Number == 5 ||
-                                        mvm.lessonSelected.Number == 9 ||
-                                        mvm.lessonSelected.Number == 10 ||
-                                        mvm.lessonSelected.Number == 23 ||
-                                        mvm.lessonSelected.Number == 24) {
+                                    LazyVGrid(columns: [GridItem(.adaptive(minimum: 2000), spacing: itemSpacing, alignment: .leading)], spacing: 0) {
                                         
-                                        VStack(spacing: 0) {
-                                            
-                                            HStack(spacing: 0) {
-                                                
-                                                ForEach(0..<mvm.tajweedSelectedSetup.ColumnCount, id: \.self) { col in
-                                                    
-                                                    TajweedExampleHeader(col: col)
-                                                }
-                                            }
-                                            .frame(maxWidth: .infinity)
-                                            
-                                            Divider().frame(height: 1).background(Color(hex: "DAE1A0"))
-                                        }
-                                        .frame(maxWidth: .infinity)
-                                    }
-                                    
-                                    ForEach($mvm.tajweedExItems.indices, id: \.self) { index in
-                                        
-                                        let i = ((index / mvm.tajweedSelectedSetup.ColumnCount) * mvm.tajweedSelectedSetup.ColumnCount)
-                                        if ((index % mvm.tajweedSelectedSetup.ColumnCount) == 0) {
+                                        if (mvm.lessonSelected.Number == 1 ||
+                                            mvm.lessonSelected.Number == 2 ||
+                                            mvm.lessonSelected.Number == 3 ||
+                                            mvm.lessonSelected.Number == 4 ||
+                                            mvm.lessonSelected.Number == 5 ||
+                                            mvm.lessonSelected.Number == 9 ||
+                                            mvm.lessonSelected.Number == 10 ||
+                                            mvm.lessonSelected.Number == 23 ||
+                                            mvm.lessonSelected.Number == 24) {
                                             
                                             VStack(spacing: 0) {
-                                                
-                                                if (index == 0) {
-                                                    
-                                                    if (mvm.lessonSelected.Number != 1 &&
-                                                        mvm.lessonSelected.Number != 2 &&
-                                                        mvm.lessonSelected.Number != 3 &&
-                                                        mvm.lessonSelected.Number != 4 &&
-                                                        mvm.lessonSelected.Number != 5 &&
-                                                        mvm.lessonSelected.Number != 9 &&
-                                                        mvm.lessonSelected.Number != 10 &&
-                                                        mvm.lessonSelected.Number != 23 &&
-                                                        mvm.lessonSelected.Number != 24) {
-                                                        
-                                                        Divider().frame(height: 1).background(Color(hex: "DAE1A0"))
-                                                    }
-                                                }
                                                 
                                                 HStack(spacing: 0) {
                                                     
                                                     ForEach(0..<mvm.tajweedSelectedSetup.ColumnCount, id: \.self) { col in
                                                         
-                                                        TajweedExampleBody(example: mvm.tajweedExItems[i + col], col: col, activeLetter: $activeLetter, player: $player, audioHelper: $audioHelper)
+                                                        TajweedExampleHeader(col: col)
                                                     }
                                                 }
                                                 .frame(maxWidth: .infinity)
@@ -127,10 +92,54 @@ struct TajweedExView: View {
                                             }
                                             .frame(maxWidth: .infinity)
                                         }
-                                    }                                
+                                        
+                                        ForEach($mvm.tajweedExItems.indices, id: \.self) { index in
+                                            
+                                            let i = ((index / mvm.tajweedSelectedSetup.ColumnCount) * mvm.tajweedSelectedSetup.ColumnCount)
+                                            if ((index % mvm.tajweedSelectedSetup.ColumnCount) == 0) {
+                                                
+                                                VStack(spacing: 0) {
+                                                    
+                                                    if (index == 0) {
+                                                        
+                                                        if (mvm.lessonSelected.Number != 1 &&
+                                                            mvm.lessonSelected.Number != 2 &&
+                                                            mvm.lessonSelected.Number != 3 &&
+                                                            mvm.lessonSelected.Number != 4 &&
+                                                            mvm.lessonSelected.Number != 5 &&
+                                                            mvm.lessonSelected.Number != 9 &&
+                                                            mvm.lessonSelected.Number != 10 &&
+                                                            mvm.lessonSelected.Number != 23 &&
+                                                            mvm.lessonSelected.Number != 24) {
+                                                            
+                                                            Divider().frame(height: 1).background(Color(hex: "DAE1A0"))
+                                                        }
+                                                    }
+                                                    
+                                                    HStack(spacing: 0) {
+                                                        
+                                                        ForEach(0..<mvm.tajweedSelectedSetup.ColumnCount, id: \.self) { col in
+                                                            
+                                                            TajweedExampleBody(example: mvm.tajweedExItems[i + col], col: col, activeLetter: $activeLetter, player: $player, audioHelper: $audioHelper)
+                                                        }
+                                                    }
+                                                    .frame(maxWidth: .infinity)
+                                                    
+                                                    Divider().frame(height: 1).background(Color(hex: "DAE1A0"))
+                                                }
+                                                .frame(maxWidth: .infinity)
+                                            }
+                                        }
+                                    }
+                                    .padding(.leading, layoutPadding)
+                                    .padding(.trailing, layoutPadding)
                                 }
-                                .padding(.leading, layoutPadding)
-                                .padding(.trailing, layoutPadding)
+                                .onAppear() {
+                                    
+                                    if (currentLanguage == "Ar") {
+                                        scrollView1.scrollTo(0)
+                                    }
+                                }
                             }
                         }
                     }

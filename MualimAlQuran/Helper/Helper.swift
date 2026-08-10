@@ -437,7 +437,12 @@ func letterColor(item: LessonModel, activeLetter: Int, lesson: ListModel) -> Col
     else {
         
         if (lesson.Number == 2 || lesson.Number == 4 || lesson.Number == 17) {
-            return Color(hex: letterColor(id: Int(item.sectionID)!))
+            if (Int(item.sectionID) != nil) {
+                return Color(hex: letterColor(id: Int(item.sectionID)!))
+            }
+            else {
+                return Color(hex: letterColor(id: item.id))
+            }
         }
         else if (lesson.Number == 5 || lesson.Number == 9 || lesson.Number == 11 || lesson.Number == 12 || lesson.Number == 13 || lesson.Number == 16) {
             
@@ -654,10 +659,20 @@ func recitersList(download: Bool = false, mvm: MainViewModel) -> [(String, Strin
     if (download) {
         data.append(("WordByWord", mvm.lessons.first { $0.id == 20 }!.Title.components(separatedBy: "<span>")[0]))
         data.append(("English", mvm.stages.first { $0.id == 5 }!.Title + " - English"))
+        data.append(("Arabic", mvm.stages.first { $0.id == 5 }!.Title + " - Arabic"))
         data.append(("Swahili", mvm.stages.first { $0.id == 5 }!.Title + " - Swahili"))
         data.append(("French", mvm.stages.first { $0.id == 5 }!.Title + " - French"))
         data.append(("Portuguese", mvm.stages.first { $0.id == 5 }!.Title + " - Portuguese"))
         data.append(("Spanish", mvm.stages.first { $0.id == 5 }!.Title + " - Spanish"))
+        data.append(("Russian", mvm.stages.first { $0.id == 5 }!.Title + " - Russian"))
+        data.append(("German", mvm.stages.first { $0.id == 5 }!.Title + " - German"))
+        data.append(("Hindi", mvm.stages.first { $0.id == 5 }!.Title + " - Hindi"))
+        data.append(("Chinese", mvm.stages.first { $0.id == 5 }!.Title + " - Chinese"))
+        data.append(("Urdu", mvm.stages.first { $0.id == 5 }!.Title + " - Urdu"))
+        data.append(("Bahasa", mvm.stages.first { $0.id == 5 }!.Title + " - Bahasa"))
+        data.append(("Bangla", mvm.stages.first { $0.id == 5 }!.Title + " - Bangla"))
+        data.append(("Hausa", mvm.stages.first { $0.id == 5 }!.Title + " - Hausa"))
+        data.append(("Turkish", mvm.stages.first { $0.id == 5 }!.Title + " - Turkish"))
     }
 
     return data
@@ -681,6 +696,38 @@ func getReciter(mvm: MainViewModel) -> (String, String) {
 
     return reciterName!
 }
+
+func getReciterAr(id: String) -> String {
+
+    var name = ""
+
+    if (id == "1") {
+        name = (getLanguage() == "Ar") ? "محمود الحصري" : "Mahmoud Al-Hussary"
+    } else if (id == "2") {
+        name = (getLanguage() == "Ar") ? "محمد المنشاوي" : "Mohammed Al-Minshawi"
+    } else if (id == "3") {
+        name = (getLanguage() == "Ar") ? "إبراهيم الأخضر" : "Ibrahim Al-Akhdar"
+    } else if (id == "4") {
+        name = (getLanguage() == "Ar") ? "محمد أيوب" : "Mohammed Ayoub"
+    } else if (id == "5") {
+        name = (getLanguage() == "Ar") ?  "محمود البنا" : "Mahmoud Al-Banna"
+    } else if (id == "6") {
+        name = (getLanguage() == "Ar") ? "محمود الحصري مع ترديد الأطفال" : "Mahmoud Al-Hussary with Children"
+    } else if (id == "7") {
+        name = (getLanguage() == "Ar") ? "محمد جبريل" : "Mohammed Jibreel"
+    } else if (id == "8") {
+        name = (getLanguage() == "Ar") ? "محمد المنشاوي مع ترديد الأطفال" : "Mohammed Al-Minshawi with Children"
+    } else if (id == "9") {
+        name = (getLanguage() == "Ar") ? "سعد الغامدي" : "Saad Al-Ghamdi"
+    } else if (id == "10") {
+        name = (getLanguage() == "Ar") ? "محمد الفقيه" : "Mohammed Faqih"
+    } else if (id == "11") {
+        name = (getLanguage() == "Ar") ? "ابراهيم الدوسري (ورش عن نافع)" : "Ibrahim Al-Dossari (Warsh A'n Nafi')"
+    }
+
+    return name
+}
+
 
 func basmalah(surah: String, mvm: MainViewModel) -> Bool {
 
@@ -734,16 +781,37 @@ func setBookmark(id: String, surah: String, surahName:String, ayah: String) {
     }
 }
 
-func getBookmark(key: String = "") -> String {
+func getBookmark(key: String = "", mvm: MainViewModel) -> String {
 
-    let value = if (UserDefaults.standard.string(forKey: "bookmark\(key)") != nil) {
-        UserDefaults.standard.string(forKey: "bookmark\(key)")
+    if (UserDefaults.standard.string(forKey: "bookmark\(key)") != nil) {
+        
+        if (key == "SurahName" && getLanguage() == "Ar") {
+            
+            if (!mvm.verseByVerse.isEmpty) {
+                
+                let data = mvm.verseByVerse
+                    .filter { $0.Surah == getBookmark(key: "Surah", mvm: mvm) }
+                    .sorted { Int($0.Ayah)! < Int($1.Ayah)! }
+                
+                return data[0].SurahNameAr.replacingOccurrences(of: data[0].SurahNameAr.split(separator: " ")[0] + " ", with: "")
+            }
+        }
+        
+        return UserDefaults.standard.string(forKey: "bookmark\(key)")!
+    }
+    
+    return ""
+    
+    /*let value = if (UserDefaults.standard.string(forKey: "bookmark\(key)") != nil) {
+        
+        var value = UserDefaults.standard.string(forKey: "bookmark\(key)")
+        
     }
     else {
         ""
     }
 
-    return value!
+    return value!*/
 }
 
 func tajweedColorCode(code: Int) -> String {
@@ -895,23 +963,41 @@ func isMemorized(userID: String, surah: String, ayah: String) -> Bool {
 
 func memorizingResetTotalCounter(vm: RecitationViewModel) {
 
-    if (vm.page.selected == "3 Ayah" && vm.juzu.selected == "3 Times") {
+    var ayahText:String {
+        if (getLanguage() == "Ar") {
+            "آيات"
+        }
+        else {
+            "Ayah"
+        }
+    }
+    
+    var timesText:String {
+        if (getLanguage() == "Ar") {
+            "مرات"
+        }
+        else {
+            "Times"
+        }
+    }
+    
+    if (vm.page.selected == "3 \(ayahText)" && vm.juzu.selected == "3 \(timesText)") {
         vm.memorizingTotalCounter = 15
-    } else if (vm.page.selected == "5 Ayah" && vm.juzu.selected == "3 Times") {
+    } else if (vm.page.selected == "5 \(ayahText)" && vm.juzu.selected == "3 \(timesText)") {
         vm.memorizingTotalCounter = 27
-    } else if (vm.page.selected == "7 Ayah" && vm.juzu.selected == "3 Times") {
+    } else if (vm.page.selected == "7 \(ayahText)" && vm.juzu.selected == "3 \(timesText)") {
         vm.memorizingTotalCounter = 39
-    } else if (vm.page.selected == "3 Ayah" && vm.juzu.selected == "5 Times") {
+    } else if (vm.page.selected == "3 \(ayahText)" && vm.juzu.selected == "5 \(timesText)") {
         vm.memorizingTotalCounter = 25
-    } else if (vm.page.selected == "5 Ayah" && vm.juzu.selected == "5 Times") {
+    } else if (vm.page.selected == "5 \(ayahText)" && vm.juzu.selected == "5 \(timesText)") {
         vm.memorizingTotalCounter = 45
-    } else if (vm.page.selected == "7 Ayah" && vm.juzu.selected == "5 Times") {
+    } else if (vm.page.selected == "7 \(ayahText)" && vm.juzu.selected == "5 \(timesText)") {
         vm.memorizingTotalCounter = 65
-    } else if (vm.page.selected == "3 Ayah" && vm.juzu.selected == "7 Times") {
+    } else if (vm.page.selected == "3 \(ayahText)" && vm.juzu.selected == "7 \(timesText)") {
         vm.memorizingTotalCounter = 35
-    } else if (vm.page.selected == "5 Ayah" && vm.juzu.selected == "7 Times") {
+    } else if (vm.page.selected == "5 \(ayahText)" && vm.juzu.selected == "7 \(timesText)") {
         vm.memorizingTotalCounter = 63
-    } else if (vm.page.selected == "7 Ayah" && vm.juzu.selected == "7 Times") {
+    } else if (vm.page.selected == "7 \(ayahText)" && vm.juzu.selected == "7 \(timesText)") {
         vm.memorizingTotalCounter = 91
     }
 }
@@ -975,4 +1061,14 @@ struct HTMLStringView: UIViewRepresentable {
     func updateUIView(_ uiView: WKWebView, context: Context) {
         uiView.loadHTMLString(htmlContent, baseURL: nil)
     }
+}
+
+func hafs() -> String {
+
+    if (getLanguage() == "Ar") {
+        
+        return "opensans"
+    }
+
+    return "KFGQPCHAFSUthmanicScript-Regula"
 }

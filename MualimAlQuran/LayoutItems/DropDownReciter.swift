@@ -7,6 +7,7 @@ struct DropDownReciter: View {
     @State var dropDownItems: [(String, String)] = []
     @State var dropDownSelected: String = ""
     @State var dropDownSelectedText: String = ""
+    @AppStorage("language") var currentLanguage = getLanguage()
     
     var body: some View {
        
@@ -18,9 +19,10 @@ struct DropDownReciter: View {
                     
                     ForEach(dropDownItems, id: \.0) { item in
                         
-                        Text(item.1)
+                        Text(getReciterAr(id: item.0))
                     }
                 }
+                .environment(\.layoutDirection, (currentLanguage == "Ar") ? .rightToLeft : .leftToRight)
                 .onChange(of: dropDownSelected) { value in
                     
                     setReciter(id: dropDownSelected)
@@ -31,8 +33,8 @@ struct DropDownReciter: View {
                 
                 HStack {
                     
-                    Text(dropDownSelectedText)
-                        .font(.custom("KFGQPCHAFSUthmanicScript-Regula", size: 16))
+                    Text(getReciterAr(id: dropDownSelected))
+                        .font(.custom(hafs(), size: 16))
                         .foregroundColor(colorResource.white)
                         .frame(maxWidth: .infinity, alignment: .leading)
                         .lineLimit(1)

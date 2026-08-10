@@ -110,10 +110,10 @@ func validateField(button: Bool, current: Bool, type: Fields, value: String, err
             valid = (value.trim() != "")
             valid = (value.trim() != "") && isEmail(email: value.trim())
             if (value.trim() == "") {
-                errorMessage = "Please enter your email address"
+                errorMessage = (getLanguage() == "Ar") ? "الرجاء إدخال البريد الإلكتروني" : "Please enter your email address"
             }
             else if (!isEmail(email: value)) {
-                errorMessage = "Invalid email address"
+                errorMessage = (getLanguage() == "Ar") ? "البريد الإلكتروني غير صحيح" : "Invalid email address"
             }
         }
         else {
@@ -181,11 +181,11 @@ func pushBookmark(surah: String, ayah: String) async {
     }
 }
 
-func syncBookmark(vm: RecitationViewModel) async {
+func syncBookmark(vm: RecitationViewModel, mvm: MainViewModel) async {
 
     if (getUser(type: "ID") != "") {
 
-        let model = await Apis().syncBookmark(id: getUser(type: "ID"), surah: getBookmark(key: "Surah"), ayah: getBookmark(key: "Ayah"), date: getBookmark(key: "Date"))
+        let model = await Apis().syncBookmark(id: getUser(type: "ID"), surah: getBookmark(key: "Surah", mvm: mvm), ayah: getBookmark(key: "Ayah", mvm: mvm), date: getBookmark(key: "Date", mvm: mvm))
         
         if (model != nil) {
 

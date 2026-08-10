@@ -43,6 +43,14 @@ class HomeModel: ObservableObject, Identifiable, Decodable {
     var Language: String = ""
     var RestartApp: String = ""
     var RestartAppSummary: String = ""
+    var ColorsMeaning: String = ""
+    var Madd6: String = ""
+    var Madd4: String = ""
+    var Madd2: String = ""
+    var Gunnah: String = ""
+    var Idgam: String = ""
+    var Tafkheem: String = ""
+    var Qalqalah: String = ""
     
     init() {
         
@@ -90,6 +98,14 @@ class HomeModel: ObservableObject, Identifiable, Decodable {
         case Language = "Language"
         case RestartApp = "RestartApp"
         case RestartAppSummary = "RestartAppSummary"
+        case ColorsMeaning = "ColorsMeaning"
+        case Madd6 = "Madd6"
+        case Madd4 = "Madd4"
+        case Madd2 = "Madd2"
+        case Gunnah = "Gunnah"
+        case Idgam = "Idgam"
+        case Tafkheem = "Tafkheem"
+        case Qalqalah = "Qalqalah"
     }
     
     required init(from decoder: Decoder) throws {
@@ -135,5 +151,13 @@ class HomeModel: ObservableObject, Identifiable, Decodable {
         Language = try values.decodeIfPresent(String.self, forKey: .Language) ?? ""
         RestartApp = try values.decodeIfPresent(String.self, forKey: .RestartApp) ?? ""
         RestartAppSummary = try values.decodeIfPresent(String.self, forKey: .RestartAppSummary) ?? ""
+        ColorsMeaning = try values.decodeIfPresent(String.self, forKey: .ColorsMeaning) ?? ""
+        Madd6 = try values.decodeIfPresent(String.self, forKey: .Madd6) ?? ""
+        Madd4 = try values.decodeIfPresent(String.self, forKey: .Madd4) ?? ""
+        Madd2 = try values.decodeIfPresent(String.self, forKey: .Madd2) ?? ""
+        Gunnah = try values.decodeIfPresent(String.self, forKey: .Gunnah) ?? ""
+        Idgam = try values.decodeIfPresent(String.self, forKey: .Idgam) ?? ""
+        Tafkheem = try values.decodeIfPresent(String.self, forKey: .Tafkheem) ?? ""
+        Qalqalah = try values.decodeIfPresent(String.self, forKey: .Qalqalah) ?? ""
     }
 }

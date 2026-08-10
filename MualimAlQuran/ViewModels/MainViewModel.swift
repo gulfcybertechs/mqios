@@ -29,7 +29,7 @@ class MainViewModel: ObservableObject
     var initiated = false
     var splashLoading = true
     @Published var loading = true
-    var language = "En"
+    @Published var language = "En"
     
     var listType = "home"
     var listSelected = ListModel()
@@ -59,6 +59,7 @@ class MainViewModel: ObservableObject
     var lesson16data: [LessonModel] = []
     
     var surahNames: [String] = []
+    var surahNamesAr: [String] = []
     @Published var recitationItems: [RecitationModel] = []
     var verse1: [RecitationModel] = []
     var verseByVerse: [RecitationModel] = []
@@ -157,12 +158,23 @@ class MainViewModel: ObservableObject
                 
                 languageItems.removeAll()
                 languageItems.append(PageModel(id: "En", Title: "English"))
+                languageItems.append(PageModel(id: "Ar", Title: "Arabic"))
                 languageItems.append(PageModel(id: "Swa", Title: "Swahili"))
                 languageItems.append(PageModel(id: "Fr", Title: "French"))
                 languageItems.append(PageModel(id: "Pt", Title: "Portuguese"))
                 languageItems.append(PageModel(id: "Es", Title: "Spanish"))
+                languageItems.append(PageModel(id: "Ru", Title: "Russian"))
+                languageItems.append(PageModel(id: "De", Title: "German"))
+                languageItems.append(PageModel(id: "Hi", Title: "Hindi"))
+                languageItems.append(PageModel(id: "Zh", Title: "Chinese"))
+                languageItems.append(PageModel(id: "Ur", Title: "Urdu"))
+                languageItems.append(PageModel(id: "Ind", Title: "Bahasa"))
+                //languageItems.append(PageModel(id: "Bn", Title: "Bangla"))
+                //languageItems.append(PageModel(id: "Ha", Title: "Hausa"))
+                //languageItems.append(PageModel(id: "Tr", Title: "Turkish"))
                 
                 surahNames = Json().load("SurahNames")
+                surahNamesAr = Json().load("SurahNamesAr")
                 verse1 = Json().load("Verses1")
                 verseByVerse = Json().load("Verses")
                 
@@ -629,7 +641,7 @@ class MainViewModel: ObservableObject
             }
             
             var root = "recitation"
-            if (reciter == "English" || reciter == "Swahili" || reciter == "French" || reciter == "Portuguese" || reciter == "Spanish") {
+            if (reciter == "English" || reciter == "Swahili" || reciter == "French" || reciter == "Portuguese" || reciter == "Spanish" || reciter == "Russian" || reciter == "German" || reciter == "Hindi" || reciter == "Chinese" || reciter == "Urdu" || reciter == "Bahasa" || reciter == "Bangla" || reciter == "Hausa" || reciter == "Turkish") {
                 root = "translation"
             }
             
@@ -832,7 +844,53 @@ class MainViewModel: ObservableObject
             letter1.section = false
             letter1.sectionID = row.id.description
             letter1.letterPosition = 2
-            letter1.Trans = "Beginning"
+            
+            if (getLanguage() == "Ar") {
+                letter1.Trans = "البداية"
+            }
+            else if (getLanguage() == "Swa") {
+                letter1.Trans = "Mwanzo";
+            }
+            else if (getLanguage() == "Fr") {
+                letter1.Trans = "Début";
+            }
+            else if (getLanguage() == "Pt") {
+                letter1.Trans = "Início";
+            }
+            else if (getLanguage() == "Es") {
+                letter1.Trans = "Comienzo";
+            }
+            else if (getLanguage() == "Ru") {
+                letter1.Trans = "начало";
+            }
+            else if (getLanguage() == "De") {
+                letter1.Trans = "Anfang";
+            }
+            else if (getLanguage() == "Hi") {
+                letter1.Trans = "शुरुआत";
+            }
+            else if (getLanguage() == "Zh") {
+                letter1.Trans = "开始";
+            }
+            else if (getLanguage() == "Ur") {
+                letter1.Trans = "آغاز";
+            }
+            else if (getLanguage() == "Ind") {
+                letter1.Trans = "Awal";
+            }
+            else if (getLanguage() == "Bn") {
+                letter1.Trans = "শুরু";
+            }
+            else if (getLanguage() == "Ha") {
+                letter1.Trans = "Farko";
+            }
+            else if (getLanguage() == "Tr") {
+                letter1.Trans = "Başlangıç";
+            }
+            else {
+                letter1.Trans = "Beginning"
+            }
+            
             newListData.append(letter1)
 
             // letter 2
@@ -846,7 +904,7 @@ class MainViewModel: ObservableObject
                 letter2._TopFr1 = "15"
                 letter2.LetterFragment2 = "ؤ"
                 letter2._TopFr2 = "-15"
-                letter2.LetterFragment3 = "ـئـ"
+              letter2.LetterFragment3 = "ـئـ"
                 letter2._TopFr3 = "-15"
 
                 letter2.LetterFragments = true
@@ -857,7 +915,53 @@ class MainViewModel: ObservableObject
             letter2.section = false
             letter2.sectionID = row.id.description
             letter2.letterPosition = 3
-            letter2.Trans = "Middle"
+            
+            if (getLanguage() == "Ar") {
+                letter2.Trans = "الوسط";
+            }
+            else if (getLanguage() == "Swa") {
+                letter2.Trans = "Katikati";
+            }
+            else if (getLanguage() == "Fr") {
+                letter2.Trans = "Milieu";
+            }
+            else if (getLanguage() == "Pt") {
+                letter2.Trans = "Meio";
+            }
+            else if (getLanguage() == "Es") {
+                letter2.Trans = "Medio";
+            }
+            else if (getLanguage() == "Ru") {
+                letter2.Trans = "Середина";
+            }
+            else if (getLanguage() == "De") {
+                letter2.Trans = "Mitte";
+            }
+            else if (getLanguage() == "Hi") {
+                letter2.Trans = "मध्य";
+            }
+            else if (getLanguage() == "Zh") {
+                letter2.Trans = "中间";
+            }
+            else if (getLanguage() == "Ur") {
+                letter2.Trans = "درمیانی";
+            }
+            else if (getLanguage() == "Ind") {
+                letter2.Trans = "Tengah";
+            }
+            else if (getLanguage() == "Bn") {
+                letter2.Trans = "মাঝখানে";
+            }
+            else if (getLanguage() == "Ha") {
+                letter2.Trans = "Tsakiya";
+            }
+            else if (getLanguage() == "Tr") {
+                letter2.Trans = "Orta";
+            }
+            else {
+                letter2.Trans = "Middle"
+            }
+            
             newListData.append(letter2)
 
             // letter 3
@@ -894,7 +998,53 @@ class MainViewModel: ObservableObject
             letter3.section = false
             letter3.sectionID = row.id.description
             letter3.letterPosition = 4
-            letter3.Trans = "End"
+            
+            if (getLanguage() == "Ar") {
+                letter3.Trans = "النهاية";
+            }
+            else if (getLanguage() == "Swa") {
+                letter3.Trans = "Mwisho";
+            }
+            else if (getLanguage() == "Fr") {
+                letter3.Trans = "Fin";
+            }
+            else if (getLanguage() == "Pt") {
+                letter3.Trans = "Final";
+            }
+            else if (getLanguage() == "Es") {
+                letter3.Trans = "Final";
+            }
+            else if (getLanguage() == "Ru") {
+                letter3.Trans = "Конец";
+            }
+            else if (getLanguage() == "De") {
+                letter3.Trans = "Ende";
+            }
+            else if (getLanguage() == "Hi") {
+                letter3.Trans = "अंत";
+            }
+            else if (getLanguage() == "Zh") {
+                letter3.Trans = "结尾";
+            }
+            else if (getLanguage() == "Ur") {
+                letter3.Trans = "ختم";
+            }
+            else if (getLanguage() == "Ind") {
+                letter3.Trans = "Akhir";
+            }
+            else if (getLanguage() == "Bn") {
+                letter3.Trans = "শেষ";
+            }
+            else if (getLanguage() == "Ha") {
+                letter3.Trans = "Ƙarshe";
+            }
+            else if (getLanguage() == "Tr") {
+                letter3.Trans = "Son";
+            }
+            else {
+                letter3.Trans = "End"
+            }
+            
             newListData.append(letter3)
 
             // letter separator

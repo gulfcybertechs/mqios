@@ -30,33 +30,64 @@ class RecitationViewModel: ObservableObject
     @Published var scrollTarget = "-1"
     @Published var ddlClicked = "Surah"
     
+    @AppStorage("language") var currentLanguage = getLanguage()
+    
+    var ayahText:String {
+        if (currentLanguage == "Ar") {
+            "الآية"
+        }
+        else {
+            "Ayah"
+        }
+    }
+    
+    var juzuText:String {
+        if (currentLanguage == "Ar") {
+            "الجزء"
+        }
+        else {
+            "Juzu"
+        }
+    }
+    
     func initiate(mvm: MainViewModel) {
         
-        surah.title = "1 FÂTIḤAH"
-        ayah.title = "Ayah 1"
-        page.title = "Page 1"
-        juzu.title = "Juzu 1"
-
-        surah.items = mvm.surahNames
+        if (currentLanguage == "Ar") {
+            surah.title = "1 الفَاتِحَة"
+            ayah.title = "الآية 1"
+            page.title = mvm.home.Page + " 1"
+            juzu.title = "الجزء 1"
+            
+            surah.items = mvm.surahNamesAr
+        }
+        else {
+            surah.title = "1 FÂTIḤAH"
+            ayah.title = "Ayah 1"
+            page.title = "Page 1"
+            juzu.title = "Juzu 1"
+            
+            surah.items = mvm.surahNames
+        }
+        
         surah.selected = surah.items[0]
         
         var ayahDDItems: [String] = []
         for i in (1...mvm.recitationItems.count) {
-            ayahDDItems.append("Ayah " + i.description)
+            ayahDDItems.append("\(ayahText) " + i.description)
         }
         ayah.items = ayahDDItems
         ayah.selected = ayah.items[0]
         
         var pageDDItems: [String] = []
         for i in (1...604) {
-            pageDDItems.append("Page " + i.description)
+            pageDDItems.append("\(mvm.home.Page) " + i.description)
         }
         page.items = pageDDItems
         page.selected = page.items[0]
 
         var juzuDDItems: [String] = []
         for i in (1...30) {
-            juzuDDItems.append("Juzu " + i.description)
+            juzuDDItems.append("\(juzuText) " + i.description)
         }
         juzu.items = juzuDDItems
         juzu.selected = juzu.items[0]
@@ -81,6 +112,8 @@ struct RecitationView: View {
     @Environment(\.dismiss) private var dismiss
     
     @State var safeArea = UIApplication.shared.firstKeyWindow?.safeAreaInsets
+    
+    @AppStorage("language") var currentLanguage = getLanguage()
     
     var body: some View {
         
@@ -211,9 +244,9 @@ struct RecitationView: View {
                             
                             LazyVGrid(columns: [GridItem(.adaptive(minimum: 1000), alignment: .leading)], spacing: 0) {
                                                                                                 
-                                ForEach($mvm.recitationItems) { item in
+                                ForEach(mvm.recitationItems) { item in
                                     
-                                    RecitationItem(item: item, vm: .constant(vm), player: $player, audioHelper: $audioHelper)
+                                    RecitationItem(item: .constant(item), vm: .constant(vm), player: $player, audioHelper: $audioHelper)
                                 }
                             }
                         }
@@ -226,7 +259,7 @@ struct RecitationView: View {
                             HStack
                             {
                                 let completedColor = (completed) ? colorResource.danger : colorResource.orange
-                                let completedText = (completed) ? "Incomplete" : "Completed"
+                                let completedText = (completed) ? mvm.home.Incomplete : mvm.home.Completed
                                 let completedIcon = (completed) ? "icloud.and.arrow.down.fill" : "icloud.and.arrow.up.fill"
                                 
                                 Button(action: {
@@ -258,7 +291,7 @@ struct RecitationView: View {
                                 
                                 Button(action: { mvm.selectedTab = Tab.account }) {
                                     
-                                    Text("Progress")
+                                    Text(mvm.home.Progress)
                                     
                                     Spacer().frame(width: 5)
                                     
@@ -319,9 +352,16 @@ struct RecitationView: View {
                             .background(colorResource.orange)
                         }
                         
+                        
                         VStack(spacing: 0) {
                             
-                            DropDownReciter()
+                            if (currentLanguage == "Ar" && mvm.listSelected.id == 5) {
+                                // No Reciter
+                            }
+                            else {
+                                
+                                DropDownReciter()
+                            }
                         }
                         
                         Button(action: {
@@ -457,7 +497,7 @@ struct RecitationView: View {
                     mvm.recitationInitialLoad = true
                     vm.initiate(mvm: mvm)
                     
-                    vm.bookmarked = getBookmark()
+                    vm.bookmarked = getBookmark(mvm: mvm)
                     
                     if (mvm.lessonSelected.StageID == 7) {
                         
@@ -500,18 +540,47 @@ struct RecitationView: View {
 
 func loadMemorizingRecitation(vm: RecitationViewModel, mvm: MainViewModel, audioHelper: AudioHelper) {
 
-    vm.page.title = "3 Ayah"
-    vm.page.selected = "3 Ayah"
+    @AppStorage("language") var currentLanguage = getLanguage()
+    
+    var ayahText:String {
+        if (currentLanguage == "Ar") {
+            "آيات"
+        }
+        else {
+            "Ayah"
+        }
+    }
+    
+    var juzuText:String {
+        if (currentLanguage == "Ar") {
+            "الجزء"
+        }
+        else {
+            "Juzu"
+        }
+    }
+    
+    var timesText:String {
+        if (currentLanguage == "Ar") {
+            "مرات"
+        }
+        else {
+            "Times"
+        }
+    }
+    
+    vm.page.title =  "3 \(ayahText)"
+    vm.page.selected = "3 \(ayahText)"
     if (getMemorizingAyah() != "") {
-        vm.page.title = getMemorizingAyah()
-        vm.page.selected = getMemorizingAyah()
+        vm.page.title = getMemorizingAyah() + " \(ayahText)"
+        vm.page.selected = getMemorizingAyah() + " \(ayahText)"
     }
 
-    vm.juzu.title = "3 Times"
-    vm.juzu.selected = "3 Times"
+    vm.juzu.title = "3 \(timesText)"
+    vm.juzu.selected = "3 \(timesText)"
     if (getMemorizingTimes() != "") {
-        vm.juzu.title = getMemorizingTimes()
-        vm.juzu.selected = getMemorizingTimes()
+        vm.juzu.title = getMemorizingTimes() + " \(timesText)"
+        vm.juzu.selected = getMemorizingTimes() + " \(timesText)"
     }
 
     if (mvm.lessonSelected.FromMemorizing) {
@@ -519,8 +588,8 @@ func loadMemorizingRecitation(vm: RecitationViewModel, mvm: MainViewModel, audio
         vm.surah.selected = vm.surah.items.first { $0.split(separator: " ")[0] == mvm.lessonSelected.MemorizingSurah }!
         vm.surah.title = vm.surah.items.first { $0.split(separator: " ")[0] == mvm.lessonSelected.MemorizingSurah }!
 
-        vm.ayah.selected = "Ayah \(mvm.lessonSelected.MemorizingAyah)"
-        vm.ayah.title = "Ayah \(mvm.lessonSelected.MemorizingAyah)"
+        vm.ayah.selected = "\(ayahText) \(mvm.lessonSelected.MemorizingAyah)"
+        vm.ayah.title = "\(ayahText) \(mvm.lessonSelected.MemorizingAyah)"
 
         loadSurah(vm: vm, mvm: mvm, surah: vm.surah.selected, trigger: "Surah", audioHelper: audioHelper)
     }
@@ -534,14 +603,14 @@ func loadMemorizingRecitation(vm: RecitationViewModel, mvm: MainViewModel, audio
     memorizingResetData(vm: vm, data: mvm.recitationItems)
 
     var pageDDItems: [String] = []
-    pageDDItems.append("3 Ayah")
-    pageDDItems.append("5 Ayah")
-    pageDDItems.append("7 Ayah")
+    pageDDItems.append("3 \(ayahText)")
+    pageDDItems.append("5 \(ayahText)")
+    pageDDItems.append("7 \(ayahText)")
     vm.page.items = pageDDItems
 
     var juzuDDItems: [String] = []
-    juzuDDItems.append("3 Times")
-    juzuDDItems.append("5 Times")
-    juzuDDItems.append("7 Times")
+    juzuDDItems.append("3 \(timesText)")
+    juzuDDItems.append("5 \(timesText)")
+    juzuDDItems.append("7 \(timesText)")
     vm.juzu.items = juzuDDItems
 }

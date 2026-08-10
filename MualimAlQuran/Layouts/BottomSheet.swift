@@ -6,6 +6,7 @@ struct BottomSheet: View {
     
     @EnvironmentObject var sheetVM: BottomSheetViewModel
     @State var player: AVPlayer = AVPlayer()
+    @AppStorage("language") var currentLanguage = getLanguage()
     
     var body: some View {
         
@@ -76,5 +77,6 @@ struct BottomSheet: View {
             Spacer()
         }
         .padding(20)
+        .environment(\.layoutDirection, (currentLanguage == "Ar") ? .rightToLeft : .leftToRight)
     }
 }

@@ -1,7 +1,7 @@
 import SwiftUI
 
 enum Tab: String, CaseIterable {
-    case home, account, share, more
+    case home, account, share, lang, more
     
     var text: String {
         switch self {
@@ -11,6 +11,8 @@ enum Tab: String, CaseIterable {
             "Account"
         case .share:
             "Share"
+        case .lang:
+            "Language"
         case .more:
             "More"
         }
@@ -20,6 +22,7 @@ enum Tab: String, CaseIterable {
 struct NavView: View {
     
     @EnvironmentObject var mvm: MainViewModel
+    @AppStorage("language") var currentLanguage = getLanguage()
     
     var body: some View {
         
@@ -86,7 +89,12 @@ struct NavView: View {
                                 
                                 if (mvm.backLevels.contains(mvm.viewLevel)) {
                                     VStack(spacing: 0) {
-                                        Image("back").resizable().aspectRatio(contentMode: .fit)
+                                        if (currentLanguage == "Ar") {
+                                            Image("back").resizable().scaleEffect(x: -1, y: 1).aspectRatio(contentMode: .fit)
+                                        }
+                                        else {
+                                            Image("back").resizable().aspectRatio(contentMode: .fit)
+                                        }
                                     }
                                     .frame(width: 40)
                                 }
@@ -101,7 +109,12 @@ struct NavView: View {
                                 
                                 if (mvm.accountBackLevels.contains(mvm.viewLevel)) {
                                     VStack(spacing: 0) {
-                                        Image("back").resizable().aspectRatio(contentMode: .fit)
+                                        if (currentLanguage == "Ar") {
+                                            Image("back").resizable().scaleEffect(x: -1, y: 1).aspectRatio(contentMode: .fit)
+                                        }
+                                        else {
+                                            Image("back").resizable().aspectRatio(contentMode: .fit)
+                                        }
                                     }
                                     .frame(width: 40)
                                 }
@@ -119,11 +132,30 @@ struct NavView: View {
                                 }
                                 .frame(width: 20)
                             }
+                            else if (tab == Tab.lang) {
+                                
+                                VStack(spacing: 0) {
+                                    Image(uiImage: UIImage(named: getLanguage().lowercased())!)
+                                        .resizable()
+                                        .aspectRatio(contentMode: .fit)
+                                        .clipShape(RoundedRectangle(cornerRadius: 2))
+                                }
+                                .padding(1)
+                                .background((mvm.selectedTab == Tab.lang) ? Color(hex: "#aab25b") : Color(hex: "#88888a"))
+                                .clipShape(RoundedRectangle(cornerRadius: 4))
+                                .frame(width: 40)
+                                
+                            }
                             else if (tab == Tab.more) {
                                 
                                 if (mvm.menuBackLevels.contains(mvm.viewLevel)) {
                                     VStack(spacing: 0) {
-                                        Image("back").resizable().aspectRatio(contentMode: .fit)
+                                        if (currentLanguage == "Ar") {
+                                            Image("back").resizable().scaleEffect(x: -1, y: 1).aspectRatio(contentMode: .fit)
+                                        }
+                                        else {
+                                            Image("back").resizable().aspectRatio(contentMode: .fit)
+                                        }
                                     }
                                     .frame(width: 40)
                                 }

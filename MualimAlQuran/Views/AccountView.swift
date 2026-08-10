@@ -43,7 +43,7 @@ struct AccountView: View {
                     vm.loader = true
                     
                     if (user.BookmarkSurah != nil && user.BookmarkAyah != nil) {
-                        if (user.BookmarkSurah != "" && user.BookmarkAyah != "" && getBookmark(key: "Surah") == "" && getBookmark(key: "Ayah") == "") {
+                        if (user.BookmarkSurah != "" && user.BookmarkAyah != "" && getBookmark(key: "Surah", mvm: mvm) == "" && getBookmark(key: "Ayah", mvm: mvm) == "") {
                             
                             setBookmark(id: user.BookmarkID!, surah: user.BookmarkSurah!, surahName: user.BookmarkSurahName!, ayah: user.BookmarkAyah!)
                         }

@@ -19,6 +19,7 @@ struct MualimAlQuranApp: App {
     let mvm = MainViewModel();
     let sheetVM = BottomSheetViewModel();
     let navigationController: UINavigationController = .init()
+    @AppStorage("language") var currentLanguage = getLanguage()
     
     init() {
         
@@ -33,7 +34,8 @@ struct MualimAlQuranApp: App {
                 
                 Navigation()
                     .environmentObject(mvm) 
-                    .environmentObject(sheetVM)                    
+                    .environmentObject(sheetVM)    
+                    .environment(\.layoutDirection, (currentLanguage == "Ar") ? .rightToLeft : .leftToRight)
             //}
             /*.onReceive(NotificationCenter.default.publisher(for: UIApplication.didBecomeActiveNotification)) { _ in
                 ATTrackingManager.requestTrackingAuthorization(completionHandler: { status in

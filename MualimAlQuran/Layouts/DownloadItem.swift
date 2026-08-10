@@ -8,6 +8,7 @@ struct DownloadItem: View {
     @Binding var item: DownloadModel
     @Binding var vm: DownloadLayout
     @State var percentageText = ""
+    @AppStorage("language") var currentLanguage = getLanguage()
     
     let timer = Timer.publish(every: 0.5, on: .main, in: .common).autoconnect()    
     
@@ -17,7 +18,7 @@ struct DownloadItem: View {
         {
             VStack(spacing: 0) {
                 
-                Text(item.Name)
+                Text((getReciterAr(id: item.id) != "") ? getReciterAr(id: item.id) : item.Name)
                     .fontWeight(.bold)
                     .foregroundStyle(colorResource.lightButtonText)
                     .frame(maxWidth: .infinity, alignment: .leading)
@@ -27,7 +28,7 @@ struct DownloadItem: View {
                 HStack(spacing: 0) {
                     
                     let reciterID = (item.id == "WordByWord") ? "w" :  item.id
-                    let root = (item.id == "English" || item.id == "Swahili" || item.id == "French" || item.id == "Portuguese" || item.id == "Spanish") ? "translation" : "recitation"
+                    let root = (item.id == "English" || item.id == "Swahili" || item.id == "French" || item.id == "Portuguese" || item.id == "Spanish" || item.id == "Russian" || item.id == "German" || item.id == "Hindi" || item.id == "Chinese" || item.id == "Urdu" || item.id == "Bahasa" || item.id == "Bangla" || item.id == "Hausa" || item.id == "Turkish") ? "translation" : "recitation"
                     let path = FileManager.default.urls(for: .documentDirectory, in: .userDomainMask)[0].appendingPathComponent("\(root)/\(reciterID)")
                     
                     var files: [URL] {

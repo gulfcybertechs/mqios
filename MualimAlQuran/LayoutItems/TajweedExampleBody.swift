@@ -21,6 +21,8 @@ struct TajweedExampleBody: View {
     @State var x = 0.0
     @State var y = 0.0
     
+    @AppStorage("language") var currentLanguage = getLanguage()
+    
     var body: some View {
             
         VStack(spacing: 0) {
@@ -47,7 +49,17 @@ struct TajweedExampleBody: View {
                                     
                                     childNodes.forEach { it1 in
                                         
-                                        let value1 = (try? it1.text()) ?? ""
+                                        var value1 = (try? it1.text()
+                                            .replacingOccurrences(of: "One Word", with: mvm.home.OneWord)
+                                            .replacingOccurrences(of: "Two Words", with: mvm.home.TwoWords)
+                                        ) ?? ""
+                                        
+                                        if (currentLanguage == "Ar") {
+                                            value1 = (try? it1.text()
+                                                .replacingOccurrences(of: "Noon Saakin", with: "النون الساكنة")
+                                                .replacingOccurrences(of: "Tanween", with: "التنوين")
+                                            ) ?? ""
+                                        }
                                         
                                         if (it1.nodeName() == "p") {
                                             str.append(AttributedString(value1))
@@ -130,7 +142,7 @@ struct TajweedExampleBody: View {
                                     .padding(.bottom, 10)
                             }
                         }
-                        .environment(\.layoutDirection, (mvm.lessonSelected.Number == 25 && col == 1) ? .leftToRight : .rightToLeft)
+                        .environment(\.layoutDirection, (mvm.lessonSelected.Number == 25 && col == 1 && currentLanguage != "Ar") ? .leftToRight : .rightToLeft)
                         
                         if (text.contains("absolute")) {
                             

@@ -8,6 +8,7 @@ struct AccountLayout: View {
     var callback : (() -> Void)? = nil
     
     var date = Calendar.current.dateComponents([.day, .month, .year], from: Date())
+    @AppStorage("language") var currentLanguage = getLanguage()
     
     var body: some View {
         
@@ -112,7 +113,7 @@ struct AccountLayout: View {
                                     
                                     ForEach($mvm.memorizingItems.filter { $0.isTab.wrappedValue }) { tabItem in
                                         
-                                        Section(header: ListTabItem(item: .constant(ListModel(Title: "\(tabItem.Surah.wrappedValue) \(tabItem.SurahName.wrappedValue)", TabIndex: tabItem.TabIndex.wrappedValue)), account: .constant(true), callBack: {
+                                        Section(header: ListTabItem(item: .constant(ListModel(Title: "\(tabItem.Surah.wrappedValue) \((currentLanguage == "Ar") ? mvm.verseByVerse.first{ $0.Surah == tabItem.Surah.wrappedValue }!.SurahNameAr : tabItem.SurahName.wrappedValue)", TabIndex: tabItem.TabIndex.wrappedValue)), account: .constant(true), callBack: {
                                             
                                             Task {
                                                 
@@ -145,7 +146,7 @@ struct AccountLayout: View {
                                                     HStack(spacing: 0)
                                                     {
                                                         VStack(spacing:0) {
-                                                            Text("From Verse:").frame(maxWidth: .infinity, alignment: .leading)
+                                                            Text((currentLanguage == "Ar") ? "من آية" : "From Verse:").frame(maxWidth: .infinity, alignment: .leading)
                                                             Text(item.FromAyah.wrappedValue)
                                                                 .fontWeight(.bold)
                                                                 .foregroundStyle(colorResource.maroon)
@@ -154,7 +155,7 @@ struct AccountLayout: View {
                                                         .frame(width: screenWidth * 0.35)
                                                         
                                                         VStack(alignment: .leading, spacing:0) {
-                                                            Text("To Verse:").frame(maxWidth: .infinity, alignment: .leading)
+                                                            Text((currentLanguage == "Ar") ? "إلى آية" : "To Verse:").frame(maxWidth: .infinity, alignment: .leading)
                                                             Text(item.ToAyah.wrappedValue)
                                                                 .fontWeight(.bold)
                                                                 .foregroundStyle(colorResource.maroon)
@@ -191,7 +192,7 @@ struct AccountLayout: View {
                                                                                                                                                                                                             
                                                                 }) {
                                                                     
-                                                                    Image(systemName: "arrow.right")
+                                                                    Image(systemName: (currentLanguage == "Ar") ? "arrow.left" : "arrow.right")
                                                                         .foregroundStyle(Color.white)
                                                                         .font(.system(size: 18))
                                                                         .padding(5)

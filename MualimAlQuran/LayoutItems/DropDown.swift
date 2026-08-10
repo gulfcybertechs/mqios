@@ -11,6 +11,25 @@ struct DropDown: View {
     @Binding var audioHelper: AudioHelper
     @Binding var geo: GeometryProxy
     @State var isPresented = false
+    @AppStorage("language") var currentLanguage = getLanguage()
+    
+    var ayahText:String {
+        if (currentLanguage == "Ar") {
+            "الآية"
+        }
+        else {
+            "Ayah"
+        }
+    }
+    
+    var juzuText:String {
+        if (currentLanguage == "Ar") {
+            "الجزء"
+        }
+        else {
+            "Juzu"
+        }
+    }
     
     var body: some View {
         
@@ -25,7 +44,7 @@ struct DropDown: View {
                 HStack {
                     
                     Text(selected)
-                        .font(.custom("KFGQPCHAFSUthmanicScript-Regula", size: 16))
+                        .font(.custom(hafs(), size: 16))
                         .foregroundColor(colorResource.lightButtonText)
                         .frame(maxWidth: .infinity, alignment: .leading)
                         .lineLimit(1)
@@ -123,7 +142,7 @@ struct DropDown: View {
                                             vm.page.selected = item
                                             vm.page.title = item
                                             
-                                            setMemorizingAyah(id: item)
+                                            setMemorizingAyah(id: item.split(separator: " ")[0].description)
                                             loadMemorizingAyah(vm: vm, mvm: mvm, trigger: "Ayah", audioHelper: audioHelper)
                                             
                                         } else {
@@ -156,7 +175,7 @@ struct DropDown: View {
                                             vm.juzu.selected = item
                                             vm.juzu.title = item
                                             
-                                            setMemorizingAyah(id: item)
+                                            setMemorizingTimes(id: item.split(separator: " ")[0].description)
                                             loadMemorizingAyah(vm: vm, mvm: mvm, trigger: "Ayah", audioHelper: audioHelper)
                                             
                                         } else {
@@ -206,6 +225,7 @@ struct DropDown: View {
                     .task(id: isPresented) {
                         scrollView.scrollTo(selected, anchor: .center)
                     }
+                    .environment(\.layoutDirection, (currentLanguage == "Ar") ? .rightToLeft : .leftToRight)
                 }
             }
         }
@@ -213,6 +233,26 @@ struct DropDown: View {
 }
 
 func loadSurah(vm: RecitationViewModel, mvm: MainViewModel, surah: String, trigger: String, audioHelper: AudioHelper, callback: (() -> ())? = nil) {
+    
+    @AppStorage("language") var currentLanguage = getLanguage()
+    
+    var ayahText:String {
+        if (currentLanguage == "Ar") {
+            "الآية"
+        }
+        else {
+            "Ayah"
+        }
+    }
+    
+    var juzuText:String {
+        if (currentLanguage == "Ar") {
+            "الجزء"
+        }
+        else {
+            "Juzu"
+        }
+    }
     
     if (mvm.listSelected.StageID == 7) {
 
@@ -234,7 +274,7 @@ func loadSurah(vm: RecitationViewModel, mvm: MainViewModel, surah: String, trigg
 
         var ayahDDItems: [String] = []
         for i in (1...data.count) {
-            ayahDDItems.append("Ayah " + i.description)
+            ayahDDItems.append("\(ayahText) " + i.description)
         }
         vm.ayah.items = ayahDDItems
 
@@ -274,17 +314,17 @@ func loadSurah(vm: RecitationViewModel, mvm: MainViewModel, surah: String, trigg
         if (trigger == "Surah") {
             
             if (!mvm.lessonSelected.FromMemorizing) {
-                vm.ayah.title = "Ayah 1"
-                vm.ayah.selected = "Ayah 1"
+                vm.ayah.title = "\(ayahText) 1"
+                vm.ayah.selected = "\(ayahText) 1"
             }
 
             if (mvm.listSelected.StageID != 7) {
 
-                vm.page.title = "Page \(data[0].Page)"
-                vm.page.selected = "Page \(data[0].Page)"
+                vm.page.title = "\(mvm.home.Page) \(data[0].Page)"
+                vm.page.selected = "\(mvm.home.Page) \(data[0].Page)"
 
-                vm.juzu.title = "Juzu \(data[0].Juzu)"
-                vm.juzu.selected = "Juzu \(data[0].Juzu)"
+                vm.juzu.title = "\(juzuText) \(data[0].Juzu)"
+                vm.juzu.selected = "\(juzuText) \(data[0].Juzu)"
             }
         }
 
@@ -301,11 +341,11 @@ func loadSurah(vm: RecitationViewModel, mvm: MainViewModel, surah: String, trigg
 
                 let ayahToSelect = mvm.recitationItems.first { $0.Page == vm.page.selected.split(separator: " ")[1] }!.Ayah
 
-                vm.ayah.title = "Ayah \(ayahToSelect)"
-                vm.ayah.selected = "Ayah \(ayahToSelect)"
+                vm.ayah.title = "\(ayahText) \(ayahToSelect)"
+                vm.ayah.selected = "\(ayahText) \(ayahToSelect)"
 
-                vm.juzu.title = "Juzu \(data[0].Juzu)"
-                vm.juzu.selected = "Juzu \(data[0].Juzu)"
+                vm.juzu.title = "\(juzuText) \(data[0].Juzu)"
+                vm.juzu.selected = "\(juzuText) \(data[0].Juzu)"
                 
                 vm.scrollTarget = mvm.recitationItems.first{ $0.Page == vm.page.selected.split(separator: " ")[1] }!.id.description
             }
@@ -314,11 +354,11 @@ func loadSurah(vm: RecitationViewModel, mvm: MainViewModel, surah: String, trigg
 
                 let ayahToSelect = mvm.recitationItems.first { $0.Juzu == vm.juzu.selected.split(separator: " ")[1] }!.Ayah
 
-                vm.ayah.title = "Ayah \(ayahToSelect)"
-                vm.ayah.selected = "Ayah \(ayahToSelect)"
+                vm.ayah.title = "\(ayahText) \(ayahToSelect)"
+                vm.ayah.selected = "\(ayahText) \(ayahToSelect)"
 
-                vm.page.title = "Page \(data[0].Page)"
-                vm.page.selected = "Page \(data[0].Page)"
+                vm.page.title = "\(mvm.home.Page) \(data[0].Page)"
+                vm.page.selected = "\(mvm.home.Page) \(data[0].Page)"
 
                 vm.scrollTarget = mvm.recitationItems.first{ $0.Juzu == vm.juzu.selected.split(separator: " ")[1] }!.id.description
             }
@@ -329,6 +369,26 @@ func loadSurah(vm: RecitationViewModel, mvm: MainViewModel, surah: String, trigg
 }
 
 func loadMemorizingAyah(vm: RecitationViewModel, mvm: MainViewModel, trigger: String, audioHelper: AudioHelper) {
+    
+    @AppStorage("language") var currentLanguage = getLanguage()
+    
+    var ayahText:String {
+        if (currentLanguage == "Ar") {
+            "الآية"
+        }
+        else {
+            "Ayah"
+        }
+    }
+    
+    var juzuText:String {
+        if (currentLanguage == "Ar") {
+            "الجزء"
+        }
+        else {
+            "Juzu"
+        }
+    }
     
     if (mvm.listSelected.StageID == 7) {
         
@@ -355,8 +415,8 @@ func loadMemorizingAyah(vm: RecitationViewModel, mvm: MainViewModel, trigger: St
             if (vm.surah.selected.split(separator: " ")[0] != "114") {
                 
                 vm.surah.selected = vm.surah.items.first{ $0.split(separator: " ")[0] == (Int(vm.surah.selected.split(separator: " ")[0])! + 1).description }!
-                vm.ayah.title = "Ayah 1"
-                vm.ayah.selected = "Ayah 1"
+                vm.ayah.title = "\(ayahText) 1"
+                vm.ayah.selected = "\(ayahText) 1"
                 
                 loadSurah(vm: vm, mvm: mvm, surah: vm.surah.selected, trigger: "Surah", audioHelper: audioHelper)
                 
@@ -369,8 +429,8 @@ func loadMemorizingAyah(vm: RecitationViewModel, mvm: MainViewModel, trigger: St
         }
         else {
             
-            vm.ayah.title = "Ayah \(startAyah)"
-            vm.ayah.selected = "Ayah \(startAyah)"
+            vm.ayah.title = "\(ayahText) \(startAyah)"
+            vm.ayah.selected = "\(ayahText) \(startAyah)"
         }
     }
     else if (trigger == "PrevButton") {
@@ -382,8 +442,8 @@ func loadMemorizingAyah(vm: RecitationViewModel, mvm: MainViewModel, trigger: St
             if (vm.surah.selected.split(separator: " ")[0] != "1") {
                 
                 vm.surah.selected = vm.surah.items.first{ $0.split(separator: " ")[0] == (Int(vm.surah.selected.split(separator: " ")[0])! - 1).description }!
-                vm.ayah.title = "Ayah 1"
-                vm.ayah.selected = "Ayah 1"
+                vm.ayah.title = "\(ayahText) 1"
+                vm.ayah.selected = "\(ayahText) 1"
                 
                 loadSurah(vm: vm, mvm: mvm, surah: vm.surah.selected, trigger: "Surah", audioHelper: audioHelper)
                 
@@ -396,8 +456,8 @@ func loadMemorizingAyah(vm: RecitationViewModel, mvm: MainViewModel, trigger: St
         }
         else {
             
-            vm.ayah.title = "Ayah \(startAyah)"
-            vm.ayah.selected = "Ayah \(startAyah)"
+            vm.ayah.title = "\(ayahText) \(startAyah)"
+            vm.ayah.selected = "\(ayahText) \(startAyah)"
         }
     }
     

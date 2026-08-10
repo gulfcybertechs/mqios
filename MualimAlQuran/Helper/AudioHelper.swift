@@ -472,6 +472,10 @@ struct AudioHelper {
             createDir(name: "translation/English")
         }
         
+        if (!fileExist(name: "translation/Arabic")) {
+            createDir(name: "translation/Arabic")
+        }
+        
         if (!fileExist(name: "translation/French")) {
             createDir(name: "translation/French")
         }
@@ -486,6 +490,42 @@ struct AudioHelper {
         
         if (!fileExist(name: "translation/Swahili")) {
             createDir(name: "translation/Swahili")
+        }
+        
+        if (!fileExist(name: "translation/Russian")) {
+            createDir(name: "translation/Russian")
+        }
+
+        if (!fileExist(name: "translation/German")) {
+            createDir(name: "translation/German")
+        }
+
+        if (!fileExist(name: "translation/Hindi")) {
+            createDir(name: "translation/Hindi")
+        }
+
+        if (!fileExist(name: "translation/Chinese")) {
+            createDir(name: "translation/Chinese")
+        }
+        
+        if (!fileExist(name: "/translation/Urdu")) {
+            createDir(name: "/translation/Urdu")
+        }
+
+        if (!fileExist(name: "/translation/Bahasa")) {
+            createDir(name: "/translation/Bahasa")
+        }
+
+        if (!fileExist(name: "/translation/Bangla")) {
+            createDir(name: "/translation/Bangla")
+        }
+
+        if (!fileExist(name: "/translation/Hausa")) {
+            createDir(name: "/translation/Hausa")
+        }
+
+        if (!fileExist(name: "/translation/Turkish")) {
+            createDir(name: "/translation/Turkish")
         }
     }
     

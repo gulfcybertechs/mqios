@@ -9,15 +9,15 @@ struct FeedbackLayout: View {
     
     @State var name = ""
     @State var nameValid = true
-    @State var nameError = "Please enter your name"
+    @State var nameError = (getLanguage() == "Ar") ? "الرجاء إدخال الإسم" : "Please enter your name"
     
     @State var email = ""
     @State var emailValid = true
-    @State var emailError = "Please enter your email address"
+    @State var emailError = (getLanguage() == "Ar") ? "الرجاء إدخال البريد الإلكتروني" : "Please enter your email address"
     
     @State var feedback = ""
     @State var feedbackValid  = true
-    @State var feedbackError  = "Please enter your feedback"
+    @State var feedbackError  = (getLanguage() == "Ar") ? "الرجاء إدخال الملاحظات" : "Please enter your feedback"
     
     @FocusState var keyboardFocused: Fields?
     

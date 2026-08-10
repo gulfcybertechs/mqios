@@ -9,6 +9,7 @@ struct DownloadLayout: View {
     
     var audioHelper: AudioHelper = AudioHelper(player: .constant(Player()))
     @State var safeArea = UIApplication.shared.firstKeyWindow?.safeAreaInsets
+    @AppStorage("language") var currentLanguage = getLanguage()
     
     var body: some View {
         
@@ -62,7 +63,7 @@ struct DownloadLayout: View {
                                 }
                             }
                             ) {
-                                Text("Download All")
+                                Text((currentLanguage == "Ar") ? "تنزيل الكل" : "Download All")
                             }
                             .buttonStyle(.borderedProminent)
                             .tint(colorResource.primary_500)
@@ -73,7 +74,7 @@ struct DownloadLayout: View {
                                 
                                 Button(action: { mvm.downloadingItems.removeAll() }) {
                                     
-                                    Text("Stop All")
+                                    Text((currentLanguage == "Ar") ? "إيقاف الكل" : "Stop All")
                                         .foregroundStyle(.black)
                                 }
                                 .buttonStyle(.borderedProminent)
@@ -86,20 +87,20 @@ struct DownloadLayout: View {
                                 
                                 Button(action: { clearAllAlert = true }) {
                                     
-                                    Text("Clear All")
+                                    Text((currentLanguage == "Ar") ? "حذف الكل" : "Clear All")
                                         .foregroundStyle(.white)
                                 }                                
                                 .buttonStyle(.borderedProminent)
                                 .tint(colorResource.maroon)
-                                .alert("Are you sure you want to clear all the downloaded files?", isPresented: $clearAllAlert) {
-                                    Button("Delete", role: .destructive) { 
+                                .alert((currentLanguage == "Ar") ? "هل أنت متأكد من أنك تريد حذف جميع البيانات التي تم تنزيلها؟" : "Are you sure you want to clear all the downloaded files?", isPresented: $clearAllAlert) {
+                                    Button((currentLanguage == "Ar") ? "حذف" : "Delete", role: .destructive) {
                                         
                                         for it in recitersList(download: true, mvm: mvm) {
                                             
                                             mvm.deleteFiles(reciter: it.0)
                                         }
                                     }
-                                    Button("Cancel", role: .cancel) { }
+                                    Button((currentLanguage == "Ar") ? "إلغاء" : "Cancel", role: .cancel) { }
                                 }
                             }
                         }
@@ -203,7 +204,7 @@ struct DownloadLayout: View {
                 }
                 else {
                     
-                    if (reciter.id == "English" || reciter.id == "Swahili" || reciter.id == "French" || reciter.id == "Portuguese" || reciter.id == "Spanish") {
+                    if (reciter.id == "English" || reciter.id == "Swahili" || reciter.id == "French" || reciter.id == "Portuguese" || reciter.id == "Spanish" || reciter.id == "Russian" || reciter.id == "German" || reciter.id == "Hindi" || reciter.id == "Chinese" || reciter.id == "Urdu" || reciter.id == "Bahasa" || reciter.id == "Bangla" || reciter.id == "Hausa" || reciter.id == "Turkish") {
                         root = "translation"
                     }
                     

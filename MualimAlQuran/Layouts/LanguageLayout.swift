@@ -26,7 +26,7 @@ struct LanguageLayout: View {
                         //region Header
                         Spacer().frame(height: 40)
                         
-                        Text(mvm.pageSelected.Title)
+                        Text(mvm.pages.first{ $0.id == "language" }?.Title ?? "")
                             .font(.custom("opensans", size: 26))
                             .fontWeight(.medium)
                             .foregroundStyle(.black)
@@ -128,7 +128,7 @@ struct LanguageLayout: View {
         .clipped()
         .ignoresSafeArea(.all, edges: [.top, .leading, .trailing])
         .onAppear {
-            mvm.viewLevel = "page"
+            //mvm.viewLevel = "page"
             mvm.back = false                        
         }
         .task(id: mvm.back) {

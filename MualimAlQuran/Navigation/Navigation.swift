@@ -8,7 +8,7 @@ struct Navigation: View {
     
     @State private var selectedTab = Tab.home
     
-    var body: some View {
+    var body: some View { 
         
         ZStack {
             
@@ -55,6 +55,21 @@ struct Navigation: View {
                 .navigationBarHidden(true)
                 .navigationViewStyle(.stack)
                 .tag(Tab.share)
+                .ignoresSafeArea(.keyboard)
+                
+                NavigationView {
+                    
+                    ZStack {
+                        
+                        AppBG()
+                        
+                        LanguageLayout()
+                    }
+                    .ignoresSafeArea(.keyboard)
+                }
+                .navigationBarHidden(true)
+                .navigationViewStyle(.stack)
+                .tag(Tab.lang)
                 .ignoresSafeArea(.keyboard)
                 
                 NavigationView {

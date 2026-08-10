@@ -4,9 +4,8 @@ struct TajweedExampleHeader: View {
     
     @EnvironmentObject var mvm: MainViewModel
     @State var col: Int
-    
     @State var width = 60.0
-    @State var text = "Letter"
+    @State var text = (getLanguage() == "Ar") ? "الحرف" : "Letter"
     
     var body: some View {
                         

@@ -11,13 +11,14 @@ class ResponseHandler: ObservableObject {
     @Published var success = false
     @Published var successMessage = ""
     @Published var appleShow = true
+    @AppStorage("language") var currentLanguage = getLanguage()
     
     func preSubmit() {
         self.error = false
         self.errorMessage = ""
         self.success = false
         self.successMessage = ""
-        self.submitText = "Please wait"
+        self.submitText = (currentLanguage == "Ar") ? "الرجاء الإنتظار" : "Please wait"
         self.submitLoading = true
         self.submitEnabled = false
     }
@@ -37,6 +38,7 @@ class ResponseHandler: ObservableObject {
 struct LoginLayout: View {
         
     var callback : ((UserResponse) -> Void)? = nil
+    @AppStorage("language") var currentLanguage = getLanguage()
     
     @EnvironmentObject var mvm: MainViewModel
     @StateObject var rh = ResponseHandler()
@@ -51,15 +53,15 @@ struct LoginLayout: View {
     
     @State var name = ""
     @State var nameValid = true
-    @State var nameError = "Please enter your name"
+    @State var nameError = (getLanguage() == "Ar") ? "الرجاء إدخال الإسم" : "Please enter your name"
     
     @State var email = ""
     @State var emailValid = true
-    @State var emailError = "Please enter your email address"
+    @State var emailError = (getLanguage() == "Ar") ? "الرجاء إدخال البريد الإلكتروني" : "Please enter your email address"
     
     @State var password = ""
     @State var passwordValid  = true
-    @State var passwordError  = "Please enter your password"
+    @State var passwordError  = (getLanguage() == "Ar") ? "الرجاء إدخال كلمة المرور" : "Please enter your password"
     
     @FocusState var keyboardFocused: Fields?
     
@@ -346,7 +348,7 @@ struct LoginLayout: View {
                                     rh.submitEnabled = false
                                     
                                     googleSignin = true
-                                    summary = "Signing in with Google"
+                                    summary = (currentLanguage == "Ar") ? "تسجيل الدخول مع جوجل" : "Signing in with Google"
                                     mvm.viewLevel = "google"
                                     mvm.accountViewLevel = "google"
                                     
@@ -364,12 +366,12 @@ struct LoginLayout: View {
                                         
                                         else if (signInResult == nil) {
                                             googleValid = false
-                                            googleMessage = "Failed to retrieve user information"
+                                            googleMessage = (currentLanguage == "Ar") ? "لم يتم الحصول على بيانات المستخدم, الرجاء المحاولة مرة أخرى" : "Failed to retrieve user information"
                                         }
                                         
                                         else if (signInResult!.user.profile == nil) {
                                             googleValid = false
-                                            googleMessage = "Failed to retrieve user information"
+                                            googleMessage = (currentLanguage == "Ar") ? "لم يتم الحصول على بيانات المستخدم, الرجاء المحاولة مرة أخرى" : "Failed to retrieve user information"
                                         }
                                         
                                         if (googleValid) {
@@ -410,7 +412,7 @@ struct LoginLayout: View {
                                 
                                 Image("google").resizable().aspectRatio(contentMode: .fit).frame(width:30)
                                 
-                                Text("Sign in with Google")
+                                Text((currentLanguage == "Ar") ? "تسجيل الدخول مع جوجل" : "Sign in with Google")
                                 
                                 if (googleSignin && !rh.submitEnabled) {
                                     
@@ -446,7 +448,7 @@ struct LoginLayout: View {
                             
                             rh.reset(mvm: mvm)
                             appleSignin = true
-                            summary = "Signing in with Apple"
+                            summary = (currentLanguage == "Ar") ? "تسجيل الدخول مع آبل" : "Signing in with Apple"
                             mvm.viewLevel = "apple"
                             mvm.accountViewLevel = "apple"
                             
@@ -565,14 +567,14 @@ struct LoginLayout: View {
                                 else {
                                     
                                     rh.error = true
-                                    rh.errorMessage = "Failed to retrieve user information"
+                                    rh.errorMessage = (currentLanguage == "Ar") ? "لم يتم الحصول على بيانات المستخدم, الرجاء المحاولة مرة أخرى" : "Failed to retrieve user information"
                                     appleSignin = false
                                 }
                                 
                             case .failure(let error):
                                 
                                 rh.error = true
-                                rh.errorMessage = "Failed to retrieve user information: \(error.localizedDescription)"
+                                rh.errorMessage = (currentLanguage == "Ar") ? "لم يتم الحصول على بيانات المستخدم: \(error.localizedDescription)" : "Failed to retrieve user information: \(error.localizedDescription)"
                                 appleSignin = false
                                 
                             }

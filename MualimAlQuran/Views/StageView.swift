@@ -7,7 +7,7 @@ struct StageView: View {
     @State var layoutPadding = 0.0
     @State var itemSpacing = 0.0
     @Environment(\.dismiss) private var dismiss
-    
+    @AppStorage("language") var currentLanguage = getLanguage()
     @State var safeArea = UIApplication.shared.firstKeyWindow?.safeAreaInsets
     
     var body: some View {
@@ -64,62 +64,69 @@ struct StageView: View {
                                     
                                     ForEach($mvm.stageLessons) { item in
                                         
-                                        if (item.id == 51) {
-                                            
-                                            Button (action: {
-                                                
-                                                mvm.listType = "stage1"
-                                                mvm.listSelected1 = item.wrappedValue
-                                                mvm.stageTab = ListModel(isTab: true, TabIndex: "101")
-                                                mvm.stageNavSelection = item.id
-                                                
-                                            }) {
-                                                NavigationLink(destination: StageView1(stage: item), tag: item.id, selection: $mvm.stageNavSelection) { }
-                                                ListItem(item: item)
-                                            }
-                                            
+                                        if (currentLanguage == "Ar" && (item.id == 55 /*|| item.id == 97*/))
+                                        {
+                                            // Hide
                                         }
                                         else {
                                             
-                                            if (item.StageID.wrappedValue == 1) {
+                                            if (item.id == 51) {
                                                 
                                                 Button (action: {
                                                     
-                                                    mvm.listType = "lesson"
-                                                    mvm.lessonSelected = item.wrappedValue
-                                                    mvm.loadLessonItems()
+                                                    mvm.listType = "stage1"
+                                                    mvm.listSelected1 = item.wrappedValue
+                                                    mvm.stageTab = ListModel(isTab: true, TabIndex: "101")
                                                     mvm.stageNavSelection = item.id
                                                     
                                                 }) {
-                                                    NavigationLink(destination: LessonView(lesson: item), tag: item.id, selection: $mvm.stageNavSelection) { }
+                                                    NavigationLink(destination: StageView1(stage: item), tag: item.id, selection: $mvm.stageNavSelection) { }
                                                     ListItem(item: item)
                                                 }
-                                            }
-                                            else if (
-                                                (item.StageID.wrappedValue == 2) ||
-                                                (item.StageID.wrappedValue == 5) ||
-                                                (item.StageID.wrappedValue == 3 && item.Number.wrappedValue == -1) ||
-                                                (item.StageID.wrappedValue == 3 && item.Number.wrappedValue == -2)
-                                            ) {
                                                 
-                                                Button (action: {
+                                            }
+                                            else {
+                                                
+                                                if (item.StageID.wrappedValue == 1) {
                                                     
-                                                    mvm.recitationInitialLoad = false
-                                                    mvm.listType = "recitation"
-                                                    mvm.lessonSelected = item.wrappedValue
-                                                    mvm.recitationItems = mvm.verse1
-                                                    mvm.stageNavSelection = item.id
+                                                    Button (action: {
+                                                        
+                                                        mvm.listType = "lesson"
+                                                        mvm.lessonSelected = item.wrappedValue
+                                                        mvm.loadLessonItems()
+                                                        mvm.stageNavSelection = item.id
+                                                        
+                                                    }) {
+                                                        NavigationLink(destination: LessonView(lesson: item), tag: item.id, selection: $mvm.stageNavSelection) { }
+                                                        ListItem(item: item)
+                                                    }
+                                                }
+                                                else if (
+                                                    (item.StageID.wrappedValue == 2) ||
+                                                    (item.StageID.wrappedValue == 5) ||
+                                                    (item.StageID.wrappedValue == 3 && item.Number.wrappedValue == -1) ||
+                                                    (item.StageID.wrappedValue == 3 && item.Number.wrappedValue == -2)
+                                                ) {
                                                     
-                                                }) {
-                                                    NavigationLink(destination: RecitationView(), tag: item.id, selection: $mvm.stageNavSelection) { }
+                                                    Button (action: {
+                                                        
+                                                        mvm.recitationInitialLoad = false
+                                                        mvm.listType = "recitation"
+                                                        mvm.lessonSelected = item.wrappedValue
+                                                        mvm.recitationItems = mvm.verse1
+                                                        mvm.stageNavSelection = item.id
+                                                        
+                                                    }) {
+                                                        NavigationLink(destination: RecitationView(), tag: item.id, selection: $mvm.stageNavSelection) { }
+                                                        ListItem(item: item)
+                                                    }
+                                                }
+                                                else if (item.StageID.wrappedValue == 4) {
+                                                    
                                                     ListItem(item: item)
                                                 }
+                                                
                                             }
-                                            else if (item.StageID.wrappedValue == 4) {
- 
-                                                ListItem(item: item)
-                                            }
-                                            
                                         }
                                     }
                                 }

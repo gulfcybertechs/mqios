@@ -9,6 +9,7 @@ struct LessonItem: View {
     @Binding var item: LessonModel
     @Binding var activeLetter: Int
     @ObservedObject var player: Player
+    @AppStorage("language") var currentLanguage = getLanguage()
     
     @State var alert = false
         
@@ -349,6 +350,26 @@ struct LessonItem: View {
                 
                 HStack(spacing: 0) {
                     
+                    /*var trans: String {
+                        
+                        if (currentLanguage == "Ar") {
+                            return item.Trans
+                                .replacingOccurrences(of: "Beginning", with: "البداية")
+                                .replacingOccurrences(of: "Middle", with: "الوسط")
+                                .replacingOccurrences(of: "End", with: "النهاية")
+                        }
+                        else {
+                            return item.Trans
+                        }
+                    }*/
+                    
+                    Text(item.Trans)
+                        .font(.system(size: 18))
+                        .foregroundColor(activeLetter == item.id ? colorResource.white : colorResource.maroon)
+                        .padding(.leading, 5)
+                    
+                    Spacer()
+                    
                     if (mvm.lessonSelected.Number == 2 && !item.section) {
                         
                         Image(systemName: "play.circle.fill")
@@ -370,26 +391,21 @@ struct LessonItem: View {
                                 .font(.system(size:24))
                         }
                     }
-                    
-                    Spacer()
-                    
-                    Text(item.Trans + " " + item.id.description)
-                        .font(.system(size: 18))
-                        .foregroundColor(activeLetter == item.id ? colorResource.white : colorResource.maroon)
-                        .padding(.trailing, 5)
                 }
                 .padding(5)
+                .environment(\.layoutDirection, (currentLanguage == "Ar") ? .rightToLeft : .leftToRight)
                 
                 if (mvm.lessonSelected.Number == 7) {
                     
                     Text(item.Arti)
                         .font(.system(size: 16))
                         .foregroundColor(activeLetter == item.id ? colorResource.white : colorResource.black)
-                        .frame(maxWidth: .infinity, alignment: .trailing)
-                        .multilineTextAlignment(.trailing)
+                        .frame(maxWidth: .infinity, alignment: .leading)
+                        .multilineTextAlignment(.leading)
                         .padding(.leading, 10)
                         .padding(.trailing, 10)
                         .padding(.bottom, 10)
+                        .environment(\.layoutDirection, (currentLanguage == "Ar") ? .rightToLeft : .leftToRight)
                 }
             }
             .alert(isPresented: $alert) {

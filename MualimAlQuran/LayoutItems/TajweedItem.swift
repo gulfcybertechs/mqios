@@ -8,7 +8,7 @@ struct TajweedItem: View {
     @Binding var player: Player
     @State var title: String = ""
     @State var text: String = ""   
-    
+    @AppStorage("language") var currentLanguage = getLanguage()
     @State var navSelection: Int? = nil
     
     var body: some View {
@@ -26,6 +26,7 @@ struct TajweedItem: View {
                 }) {
                     
                     NavigationLink(destination: TajweedExView(), tag: 0, selection: $navSelection) { }
+                        .environment(\.layoutDirection, (currentLanguage == "Ar") ? .rightToLeft : .leftToRight)
                     HStack()
                     {
                         
@@ -37,7 +38,7 @@ struct TajweedItem: View {
                         
                         Spacer()
                         
-                        Image(systemName: "chevron.right")
+                        Image(systemName: (currentLanguage == "Ar") ? "chevron.left" : "chevron.right")
                             .foregroundColor(colorResource.maroon)
                             .font(.system(size: 20))
                     }

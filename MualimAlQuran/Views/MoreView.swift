@@ -6,6 +6,8 @@ struct MoreView: View {
     
     @State var navSelection: Int? = nil
     
+    @AppStorage("language") var currentLanguage = getLanguage()
+    
     var body: some View {
         
         NavigationLink(destination: PageLayout(), tag: 0, selection: $navSelection) { }
@@ -57,6 +59,7 @@ struct MoreView: View {
                                             
                                             mvm.pageSelected = item.wrappedValue
                                             if (item.id == "language") {
+                                                mvm.viewLevel = "page"
                                                 navSelection = 6
                                             } else if (item.id == "download") {                                                
                                                 navSelection = 5
@@ -77,7 +80,7 @@ struct MoreView: View {
                                                     
                                                     if (item.id != "language") {
                                                         
-                                                        Image(systemName: "chevron.right")
+                                                        Image(systemName: (currentLanguage == "Ar") ? "chevron.left" : "chevron.right")
                                                     }
                                                 }
                                                 .frame(maxWidth: .infinity)
