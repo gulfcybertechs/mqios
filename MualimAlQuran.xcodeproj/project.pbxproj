@@ -7,6 +7,8 @@
 	objects = {
 
 /* Begin PBXBuildFile section */
+		102E7EDF30782AE90083C787 /* Navigation.swift in Sources */ = {isa = PBXBuildFile; fileRef = 102E7EDE30782AE90083C787 /* Navigation.swift */; };
+		102E7EE130782C880083C787 /* NavView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 102E7EE030782C880083C787 /* NavView.swift */; };
 		1B02A6DD2C7C6D2000BF205A /* LanguageLayout.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1B02A6DC2C7C6D2000BF205A /* LanguageLayout.swift */; };
 		1B07FCF8299BBF93001D4F5A /* LessonModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1B07FCF7299BBF93001D4F5A /* LessonModel.swift */; };
 		1B07FCFA299BC1CF001D4F5A /* LessonView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1B07FCF9299BC1CF001D4F5A /* LessonView.swift */; };
@@ -157,7 +159,6 @@
 		1B721BB42E601F7000F5332C /* Zh_Lesson16.json in Resources */ = {isa = PBXBuildFile; fileRef = 1B721B7B2E601F6E00F5332C /* Zh_Lesson16.json */; };
 		1B721BB52E601F7000F5332C /* Zh_TajweedEx6.json in Resources */ = {isa = PBXBuildFile; fileRef = 1B721B7C2E601F6F00F5332C /* Zh_TajweedEx6.json */; };
 		1B835E3128A58EC600CA7919 /* MualimAlQuranApp.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1B835E3028A58EC600CA7919 /* MualimAlQuranApp.swift */; };
-		1B835E3328A58EC600CA7919 /* Navigation.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1B835E3228A58EC600CA7919 /* Navigation.swift */; };
 		1B835E3528A58ECA00CA7919 /* Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = 1B835E3428A58ECA00CA7919 /* Assets.xcassets */; };
 		1B835E3828A58ECA00CA7919 /* Preview Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = 1B835E3728A58ECA00CA7919 /* Preview Assets.xcassets */; };
 		1B9739E62C6E5B2200CD58A3 /* Apis.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1B9739E52C6E5B2200CD58A3 /* Apis.swift */; };
@@ -2803,7 +2804,6 @@
 		1BA2E8182ADCF54C009890F6 /* 003_silence_36.mp3 in Resources */ = {isa = PBXBuildFile; fileRef = 1BA2E4B92ADCF54A009890F6 /* 003_silence_36.mp3 */; };
 		1BA2E8192ADCF54C009890F6 /* 003_silence_22.mp3 in Resources */ = {isa = PBXBuildFile; fileRef = 1BA2E4BA2ADCF54A009890F6 /* 003_silence_22.mp3 */; };
 		1BA30EC429AF0FF7006C3988 /* ListTabItem.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1BA30EC329AF0FF7006C3988 /* ListTabItem.swift */; };
-		1BA81ABB2CC25A2500AD22E6 /* NavView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1BA81ABA2CC25A2500AD22E6 /* NavView.swift */; };
 		1BAAD0982C80479A00B981BF /* DownloadItem.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1BAAD0972C80479A00B981BF /* DownloadItem.swift */; };
 		1BAAD09A2C8058C000B981BF /* TajweedView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1BAAD0992C8058C000B981BF /* TajweedView.swift */; };
 		1BAAD09C2C805AAE00B981BF /* TajweedItem.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1BAAD09B2C805AAE00B981BF /* TajweedItem.swift */; };
@@ -5025,9 +5025,13 @@
 		1BFE676329A76BD400F48529 /* Player.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1BFE676229A76BD400F48529 /* Player.swift */; };
 		1BFF19472C7738EF00863139 /* GoogleSignIn in Frameworks */ = {isa = PBXBuildFile; productRef = 1BFF19462C7738EF00863139 /* GoogleSignIn */; };
 		1BFF19492C7738EF00863139 /* GoogleSignInSwift in Frameworks */ = {isa = PBXBuildFile; productRef = 1BFF19482C7738EF00863139 /* GoogleSignInSwift */; };
+		39F385017E2049BCB6736E49 /* NavigationOld.swift in Sources */ = {isa = PBXBuildFile; fileRef = C44D4E4D467247D4AF3288C1 /* NavigationOld.swift */; };
+		D6F3140F505F45A08F6BC100 /* NavViewOld.swift in Sources */ = {isa = PBXBuildFile; fileRef = C1ED7457B325419586C2952D /* NavViewOld.swift */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXFileReference section */
+		102E7EDE30782AE90083C787 /* Navigation.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = Navigation.swift; sourceTree = "<group>"; };
+		102E7EE030782C880083C787 /* NavView.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = NavView.swift; sourceTree = "<group>"; };
 		1B02A6DC2C7C6D2000BF205A /* LanguageLayout.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = LanguageLayout.swift; sourceTree = "<group>"; };
 		1B07FCF7299BBF93001D4F5A /* LessonModel.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = LessonModel.swift; sourceTree = "<group>"; };
 		1B07FCF9299BC1CF001D4F5A /* LessonView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = LessonView.swift; sourceTree = "<group>"; };
@@ -5179,7 +5183,6 @@
 		1B721B7C2E601F6F00F5332C /* Zh_TajweedEx6.json */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.json; path = Zh_TajweedEx6.json; sourceTree = "<group>"; };
 		1B835E2D28A58EC600CA7919 /* MualimAlQuran.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = MualimAlQuran.app; sourceTree = BUILT_PRODUCTS_DIR; };
 		1B835E3028A58EC600CA7919 /* MualimAlQuranApp.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MualimAlQuranApp.swift; sourceTree = "<group>"; };
-		1B835E3228A58EC600CA7919 /* Navigation.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Navigation.swift; sourceTree = "<group>"; };
 		1B835E3428A58ECA00CA7919 /* Assets.xcassets */ = {isa = PBXFileReference; lastKnownFileType = folder.assetcatalog; path = Assets.xcassets; sourceTree = "<group>"; };
 		1B835E3728A58ECA00CA7919 /* Preview Assets.xcassets */ = {isa = PBXFileReference; lastKnownFileType = folder.assetcatalog; path = "Preview Assets.xcassets"; sourceTree = "<group>"; };
 		1B9739E52C6E5B2200CD58A3 /* Apis.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Apis.swift; sourceTree = "<group>"; };
@@ -7825,7 +7828,6 @@
 		1BA2E4B92ADCF54A009890F6 /* 003_silence_36.mp3 */ = {isa = PBXFileReference; lastKnownFileType = audio.mp3; path = 003_silence_36.mp3; sourceTree = "<group>"; };
 		1BA2E4BA2ADCF54A009890F6 /* 003_silence_22.mp3 */ = {isa = PBXFileReference; lastKnownFileType = audio.mp3; path = 003_silence_22.mp3; sourceTree = "<group>"; };
 		1BA30EC329AF0FF7006C3988 /* ListTabItem.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ListTabItem.swift; sourceTree = "<group>"; };
-		1BA81ABA2CC25A2500AD22E6 /* NavView.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = NavView.swift; sourceTree = "<group>"; };
 		1BAAD0972C80479A00B981BF /* DownloadItem.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = DownloadItem.swift; sourceTree = "<group>"; };
 		1BAAD0992C8058C000B981BF /* TajweedView.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = TajweedView.swift; sourceTree = "<group>"; };
 		1BAAD09B2C805AAE00B981BF /* TajweedItem.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = TajweedItem.swift; sourceTree = "<group>"; };
@@ -10046,6 +10048,8 @@
 		1BFE671A29A642B200F48529 /* hafs.otf */ = {isa = PBXFileReference; lastKnownFileType = file; path = hafs.otf; sourceTree = "<group>"; };
 		1BFE676229A76BD400F48529 /* Player.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Player.swift; sourceTree = "<group>"; };
 		1BFF19442C77381600863139 /* MualimAlQuran.entitlements */ = {isa = PBXFileReference; lastKnownFileType = text.plist.entitlements; path = MualimAlQuran.entitlements; sourceTree = "<group>"; };
+		C1ED7457B325419586C2952D /* NavViewOld.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = NavViewOld.swift; sourceTree = "<group>"; };
+		C44D4E4D467247D4AF3288C1 /* NavigationOld.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = NavigationOld.swift; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -15237,8 +15241,10 @@
 			isa = PBXGroup;
 			children = (
 				1BD8671929865978005FD02C /* TabShadow.swift */,
-				1B835E3228A58EC600CA7919 /* Navigation.swift */,
-				1BA81ABA2CC25A2500AD22E6 /* NavView.swift */,
+				102E7EDE30782AE90083C787 /* Navigation.swift */,
+				C44D4E4D467247D4AF3288C1 /* NavigationOld.swift */,
+				102E7EE030782C880083C787 /* NavView.swift */,
+				C1ED7457B325419586C2952D /* NavViewOld.swift */,
 			);
 			path = Navigation;
 			sourceTree = "<group>";
@@ -20369,7 +20375,6 @@
 				1B3FF2D92C857B1E00E4A17C /* TajweedExampleBody.swift in Sources */,
 				1BC2B8162C7B18CE00DDC009 /* PageLayout.swift in Sources */,
 				1B02A6DD2C7C6D2000BF205A /* LanguageLayout.swift in Sources */,
-				1B835E3328A58EC600CA7919 /* Navigation.swift in Sources */,
 				1B45FF182C2C083D00D8D065 /* QLSectionModel.swift in Sources */,
 				1BAAD09A2C8058C000B981BF /* TajweedView.swift in Sources */,
 				1B45FF242C2C095A00D8D065 /* DownloadModel.swift in Sources */,
@@ -20384,6 +20389,8 @@
 				1BC2B8142C7B097D00DDC009 /* MoreView.swift in Sources */,
 				1B45FF102C2C01F200D8D065 /* TajweedExSetupModel.swift in Sources */,
 				1BD86728298BBB46005FD02C /* colorResource.swift in Sources */,
+				102E7EDF30782AE90083C787 /* Navigation.swift in Sources */,
+				39F385017E2049BCB6736E49 /* NavigationOld.swift in Sources */,
 				1BFE670929A4F9D100F48529 /* LessonItem.swift in Sources */,
 				1BAAD0982C80479A00B981BF /* DownloadItem.swift in Sources */,
 				1B45FF0E2C2C018F00D8D065 /* TajweedModel.swift in Sources */,
@@ -20393,7 +20400,6 @@
 				1BC2B8122C7B008A00DDC009 /* ShareView.swift in Sources */,
 				1B9B5A712C328E0A007DE8DB /* BottomSheetViewModel.swift in Sources */,
 				1BAB6B3C2985565E0005917A /* ListModel.swift in Sources */,
-				1BA81ABB2CC25A2500AD22E6 /* NavView.swift in Sources */,
 				1B50FACC2C8709370004923F /* QLView.swift in Sources */,
 				1B835E3128A58EC600CA7919 /* MualimAlQuranApp.swift in Sources */,
 				1B3531A02C8F25850069704E /* QLExView.swift in Sources */,
@@ -20407,6 +20413,8 @@
 				1BF878062C2A890800E13C75 /* MainViewModel.swift in Sources */,
 				1BD8671C29866286005FD02C /* StageView.swift in Sources */,
 				1B14C06B2C58E148000CCCD4 /* DropDown.swift in Sources */,
+				102E7EE130782C880083C787 /* NavView.swift in Sources */,
+				D6F3140F505F45A08F6BC100 /* NavViewOld.swift in Sources */,
 				1B45FF142C2C07AA00D8D065 /* QLModel.swift in Sources */,
 				1BD86724298B9C0D005FD02C /* ListItem.swift in Sources */,
 				1BAAD09C2C805AAE00B981BF /* TajweedItem.swift in Sources */,
@@ -20575,7 +20583,7 @@
 					"$(inherited)",
 					"@executable_path/Frameworks",
 				);
-				MARKETING_VERSION = 11;
+				MARKETING_VERSION = 12;
 				PRODUCT_BUNDLE_IDENTIFIER = mualimalquran;
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				PROVISIONING_PROFILE_SPECIFIER = "";
@@ -20612,7 +20620,7 @@
 					"$(inherited)",
 					"@executable_path/Frameworks",
 				);
-				MARKETING_VERSION = 11;
+				MARKETING_VERSION = 12;
 				PRODUCT_BUNDLE_IDENTIFIER = mualimalquran;
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				PROVISIONING_PROFILE_SPECIFIER = "";

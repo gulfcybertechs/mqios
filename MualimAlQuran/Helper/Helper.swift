@@ -652,7 +652,7 @@ func recitersList(download: Bool = false, mvm: MainViewModel) -> [(String, Strin
     data.append(("7", "Mohammed Jibreel"))
     data.append(("8", "Mohammed Al-Minshawi with Children"))
     data.append(("9", "Saad Al-Ghamdi"))
-    //data.append(("10", "Mohammed Faqih"))
+    data.append(("10", "Mohammed Faqih"))
     data.append(("11", "Ibrahim Al-Dossari (Warsh A'n Nafi')"))
     
 
