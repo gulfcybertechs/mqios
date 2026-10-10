@@ -19,7 +19,7 @@ enum Tab: String, CaseIterable {
     }
 }
 
-struct NavView: View {
+struct NavViewOld: View {
     
     @EnvironmentObject var mvm: MainViewModel
     @AppStorage("language") var currentLanguage = getLanguage()

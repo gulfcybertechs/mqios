@@ -1,6 +1,6 @@
 import SwiftUI
 
-struct Navigation: View {
+struct NavigationOld: View {
     
     @EnvironmentObject var mvm: MainViewModel
     @Environment(\.dismiss) private var dismiss
