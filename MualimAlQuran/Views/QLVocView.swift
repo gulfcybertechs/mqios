@@ -2,12 +2,12 @@ import SwiftUI
 
 struct QLVocView: View {
     
+    @AppStorage("language") var currentLanguage = getLanguage()
     @EnvironmentObject var mvm: MainViewModel
     @State var activeLetter = -1
     @State var layoutPadding = 0.0
     @State var itemSpacing = 0.0
     @State var player = Player()
-    @Environment(\.dismiss) private var dismiss
     
     @State var safeArea = UIApplication.shared.firstKeyWindow?.safeAreaInsets
     
@@ -26,7 +26,7 @@ struct QLVocView: View {
                         //region Header
                         Spacer().frame(height: 10)
                         Text(mvm.lessonSelected.Title.components(separatedBy: "<span>")[0])
-                            .font(.custom("opensans", size: 22))
+                            .font(currentLanguage == "Ar" ? .system(size: 22, weight: .bold) : .custom("opensans", size: 22))
                             .bold()
                             .lineSpacing(8)
                             .multilineTextAlignment(.center)
@@ -36,7 +36,7 @@ struct QLVocView: View {
                             .padding(.trailing, 20)
                         
                         Text(mvm.qlItems.first { $0.id == mvm.lessonSelected.Number + 100000 }!.Vocabularies)
-                            .font(.custom("opensans", size: 20))
+                            .font(currentLanguage == "Ar" ? .system(size: 20, weight: .regular) : .custom("opensans", size: 20))
                             .foregroundColor(colorResource.maroon)
                             .lineSpacing(6)
                             .multilineTextAlignment(.center)
@@ -310,12 +310,12 @@ struct QLVocView: View {
         }
         .navigationBarHidden(true)
         .frame(maxWidth: .infinity)
-        .clipped()
+        .clipShape(PageBottomOverflowClip(), style: FillStyle(antialiased: false))
         .ignoresSafeArea(.all, edges: [.top, .leading, .trailing])
         .onAppear {
-            
-            mvm.viewLevel = "qlVoc"
-            mvm.back = false
+            if let insets = UIApplication.shared.firstKeyWindow?.safeAreaInsets {
+                safeArea = insets
+            }
             
             layoutPadding = mainLayoutPadding(items: mvm.stageLessons)
             itemSpacing = listItemSpacing(items: mvm.stageLessons)
@@ -326,12 +326,6 @@ struct QLVocView: View {
                 activeLetter = -1
             }
         })
-        .task(id: mvm.backForce) {
-            if (mvm.backForce) { dismiss() }
-        }
-        .task(id: mvm.back) {
-            if (mvm.back) { mvm.back = false; dismiss(); }
-        }
         .onRotate { newOrientation in
             
             Task {

@@ -15,7 +15,13 @@ struct DropDownReciter: View {
             
             Menu {
                 
-                Picker(dropDownSelected, selection: $dropDownSelected) {
+                Picker(dropDownSelected, selection: Binding(
+                    get: { dropDownSelected },
+                    set: { value in
+                        AppHaptics.tap()
+                        dropDownSelected = value
+                    }
+                )) {
                     
                     ForEach(dropDownItems, id: \.0) { item in
                         
@@ -23,7 +29,7 @@ struct DropDownReciter: View {
                     }
                 }
                 .environment(\.layoutDirection, (currentLanguage == "Ar") ? .rightToLeft : .leftToRight)
-                .onChange(of: dropDownSelected) { value in
+                .onChange(of: dropDownSelected) { _, value in
                     
                     setReciter(id: dropDownSelected)
                     dropDownSelectedText = getReciter(mvm: mvm).1
@@ -34,7 +40,7 @@ struct DropDownReciter: View {
                 HStack {
                     
                     Text(getReciterAr(id: dropDownSelected))
-                        .font(.custom(hafs(), size: 16))
+                        .font(currentLanguage == "Ar" ? .system(size: 16, weight: .bold) : .custom(hafs(), size: 16))
                         .foregroundColor(colorResource.white)
                         .frame(maxWidth: .infinity, alignment: .leading)
                         .lineLimit(1)
@@ -50,6 +56,7 @@ struct DropDownReciter: View {
                         
                 }
             }
+            .simultaneousGesture(TapGesture().onEnded { AppHaptics.tap() })
         }
         .onAppear {
             dropDownItems = recitersList(mvm: mvm)

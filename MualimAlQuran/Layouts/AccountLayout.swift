@@ -2,6 +2,7 @@ import SwiftUI
 
 struct AccountLayout: View {        
     
+    @EnvironmentObject var navigation: AppNavigationRouter
     @EnvironmentObject var mvm: MainViewModel
     @Binding var vm: AccountViewModel    
 
@@ -32,13 +33,13 @@ struct AccountLayout: View {
                                 VStack(spacing: 0) {
                                     
                                     Text(getUser(type: "Name"))
-                                        .font(.custom("opensans", size: 26))
-                                        .fontWeight(.medium)
+                                        .font(currentLanguage == "Ar" ? .system(size: 26, weight: .bold) : .custom("opensans", size: 26))
+                                        .fontWeight(currentLanguage == "Ar" ? .bold : .medium)
                                         .foregroundStyle(Color.black)
                                         .frame(maxWidth: .infinity, alignment: .leading)
                                     
                                     Text(getUser(type: "Email"))
-                                        .font(.custom("opensans", size: 18))
+                                        .font(currentLanguage == "Ar" ? .system(size: 18, weight: .regular) : .custom("opensans", size: 18))
                                         .foregroundStyle(colorResource.maroon)
                                         .frame(maxWidth: .infinity, alignment: .leading)
                                 }
@@ -169,11 +170,6 @@ struct AccountLayout: View {
                                                                     
                                                                 Button(action: {
                                                                     
-                                                                    if (mvm.listSelected.id != 7) {
-                                                                        mvm.backForce = true
-                                                                        mvm.navigateToMemorizing = true
-                                                                    }
-                                                                    
                                                                     let lessonItem = mvm.stages.first { $0.id == 7 }!
                                                                     lessonItem.StageID = 7
                                                                     
@@ -188,6 +184,7 @@ struct AccountLayout: View {
                                                                     mvm.lessonSelected = lessonItem
                                                                     mvm.recitationItems = mvm.verse1
                                                                                                                                         
+                                                                    navigation.setPath([.recitation(stageID: 7)], in: .home)
                                                                     mvm.selectedTab = Tab.home
                                                                                                                                                                                                             
                                                                 }) {

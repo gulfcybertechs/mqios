@@ -2,11 +2,11 @@ import SwiftUI
 
 struct StageView: View {
     
+    @EnvironmentObject var navigation: AppNavigationRouter
     @EnvironmentObject var mvm: MainViewModel
     @Binding var stage: ListModel
     @State var layoutPadding = 0.0
     @State var itemSpacing = 0.0
-    @Environment(\.dismiss) private var dismiss
     @AppStorage("language") var currentLanguage = getLanguage()
     @State var safeArea = UIApplication.shared.firstKeyWindow?.safeAreaInsets
     
@@ -25,7 +25,7 @@ struct StageView: View {
                         Spacer().frame(height: 10)
                         
                         Text(mvm.listSelected.Title.replacingOccurrences(of: "<span>", with: "").replacingOccurrences(of: "</span>", with: ""))
-                            .font(.custom("opensans", size: 22))
+                            .font(currentLanguage == "Ar" ? .system(size: 22, weight: .bold) : .custom("opensans", size: 22))
                             .bold()
                             .lineSpacing(8)
                             .multilineTextAlignment(.center)
@@ -35,7 +35,7 @@ struct StageView: View {
                             .padding(.trailing, 20)
                         
                         Text(mvm.listSelected.Summary.replacingOccurrences(of: "<span>", with: "").replacingOccurrences(of: "</span>", with: ""))
-                            .font(.custom("opensans", size: 20))
+                            .font(currentLanguage == "Ar" ? .system(size: 20, weight: .regular) : .custom("opensans", size: 20))
                             .foregroundColor(colorResource.maroon)
                             .lineSpacing(6)
                             .multilineTextAlignment(.center)
@@ -73,14 +73,14 @@ struct StageView: View {
                                             if (item.id == 51) {
                                                 
                                                 Button (action: {
+                                                    AppHaptics.tap()
                                                     
                                                     mvm.listType = "stage1"
                                                     mvm.listSelected1 = item.wrappedValue
                                                     mvm.stageTab = ListModel(isTab: true, TabIndex: "101")
-                                                    mvm.stageNavSelection = item.id
+                                                    navigation.push(.tajweedRules, in: .home)
                                                     
                                                 }) {
-                                                    NavigationLink(destination: StageView1(stage: item), tag: item.id, selection: $mvm.stageNavSelection) { }
                                                     ListItem(item: item)
                                                 }
                                                 
@@ -90,14 +90,14 @@ struct StageView: View {
                                                 if (item.StageID.wrappedValue == 1) {
                                                     
                                                     Button (action: {
+                                                        AppHaptics.tap()
                                                         
                                                         mvm.listType = "lesson"
                                                         mvm.lessonSelected = item.wrappedValue
                                                         mvm.loadLessonItems()
-                                                        mvm.stageNavSelection = item.id
+                                                        navigation.push(.lesson(item.id), in: .home)
                                                         
                                                     }) {
-                                                        NavigationLink(destination: LessonView(lesson: item), tag: item.id, selection: $mvm.stageNavSelection) { }
                                                         ListItem(item: item)
                                                     }
                                                 }
@@ -109,15 +109,15 @@ struct StageView: View {
                                                 ) {
                                                     
                                                     Button (action: {
+                                                        AppHaptics.tap()
                                                         
                                                         mvm.recitationInitialLoad = false
                                                         mvm.listType = "recitation"
                                                         mvm.lessonSelected = item.wrappedValue
                                                         mvm.recitationItems = mvm.verse1
-                                                        mvm.stageNavSelection = item.id
+                                                        navigation.push(.recitation(stageID: item.StageID.wrappedValue), in: .home)
                                                         
                                                     }) {
-                                                        NavigationLink(destination: RecitationView(), tag: item.id, selection: $mvm.stageNavSelection) { }
                                                         ListItem(item: item)
                                                     }
                                                 }
@@ -172,14 +172,14 @@ struct StageView: View {
                                                     if (item.StageID.wrappedValue == 1) {
                                                         
                                                         Button (action: {
+                                                            AppHaptics.tap()
                                                             
                                                             mvm.listType = "lesson"
                                                             mvm.lessonSelected = item.wrappedValue
                                                             mvm.loadLessonItems()
-                                                            mvm.stageNavSelection = item.id
+                                                            navigation.push(.lesson(item.id), in: .home)
                                                             
                                                         }) {
-                                                            NavigationLink(destination: LessonView(lesson: item), tag: item.id, selection: $mvm.stageNavSelection) { }
                                                             ListItem(item: item)
                                                         }
                                                         
@@ -195,13 +195,13 @@ struct StageView: View {
                                                     } else if (item.StageID.wrappedValue == 4) {
                                                         
                                                         Button (action: {
+                                                            AppHaptics.tap()
                                                             
                                                             mvm.lessonSelected = item.wrappedValue
                                                             mvm.loadQLItems(mvm: mvm)
-                                                            mvm.stageNavSelection = item.id
+                                                            navigation.push(.ql, in: .home)
                                                             
                                                         }) {
-                                                            NavigationLink(destination: QLView(), tag: item.id, selection: $mvm.stageNavSelection) { }
                                                             ListItem(item: item)
                                                         }
                                                     }
@@ -225,21 +225,15 @@ struct StageView: View {
         }
         .navigationBarHidden(true)
         .frame(maxWidth: .infinity)
-        .clipped()
+        .clipShape(PageBottomOverflowClip(), style: FillStyle(antialiased: false))
         .ignoresSafeArea(.all, edges: [.top, .leading, .trailing])
         .onAppear {
-            
-            mvm.viewLevel = "stage"
-            mvm.back = false
+            if let insets = UIApplication.shared.firstKeyWindow?.safeAreaInsets {
+                safeArea = insets
+            }
             
             layoutPadding = mainLayoutPadding(items: mvm.stageLessons)
             itemSpacing = listItemSpacing(items: mvm.stageLessons)
-        }
-        .task(id: mvm.backForce) {
-            if (mvm.backForce) { dismiss() }
-        }
-        .task(id: mvm.back) {
-            if (mvm.back) { mvm.back = false; dismiss(); }
         }
         .onRotate { newOrientation in
             

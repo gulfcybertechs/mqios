@@ -2,6 +2,7 @@ import SwiftUI
 
 struct ListTabItem: View {
     
+    @AppStorage("language") var currentLanguage = getLanguage()
     @EnvironmentObject var mvm: MainViewModel
     @Binding var item: ListModel
     @Binding var account: Bool
@@ -10,12 +11,16 @@ struct ListTabItem: View {
     
     var body: some View {
         
-        Button(action: { callBack!() }) {
+        Button(action: {
+            AppHaptics.tap()
+            callBack!()
+        }) {
             
             ZStack {
                 
                 Text(item.Title)
-                    .font(.custom("opensans", size: 20))
+                    .font(currentLanguage == "Ar" ? .system(size: 20, weight: .bold) : .custom("opensans", size: 20))
+                    .fontWeight(currentLanguage == "Ar" ? .bold : nil)
                     .foregroundColor(colorResource.maroon)
                     .multilineTextAlignment(.leading)
                     .frame(maxWidth: .infinity, alignment: .leading)

@@ -7,14 +7,11 @@ class MainViewModel: ObservableObject
     //@Published var selectedTab = 0
     @Published var selectedTab = Tab.home
     @Published var homeScroll: Int? = nil
+    // Compatibility only for NavigationOld/NavViewOld; active navigation uses AppNavigationRouter.
     @Published var viewLevel = "home"
     @Published var back = false
     @Published var backLevels = ["stage", "stage1", "lesson", "tajweed", "tajweedEx", "ql", "qlVoc", "qlEx"]
     @Published var backForce = false
-    @Published var navigateToMemorizing = false
-    @Published var homeNavSelection: Int? = nil
-    @Published var stageNavSelection: Int? = nil
-    @Published var stage1NavSelection: Int? = nil
     
     @Published var accountScroll: Int? = nil
     @Published var accountViewLevel = "account"
@@ -22,7 +19,7 @@ class MainViewModel: ObservableObject
     @Published var accountBackLevels = ["forgot", "google", "create", "apple"]
     
     @Published var menuScroll: Int? = nil
-    @Published var menuBackLevels = ["page", "feedback", "language", "download"]
+    @Published var menuBackLevels = ["page", "feedback", "language", "download", "share"]
     
     @Published var qlScrollTarget = -1
     
@@ -115,7 +112,7 @@ class MainViewModel: ObservableObject
     var pages: [PageModel] = []
     var pageSelected = PageModel()
     var languageItems: [PageModel] = []
-    var downloadItems: [DownloadModel] = []
+    @Published var downloadItems: [DownloadModel] = []
     @Published var downloadingItems: [DownloadModel] = []
     
     func initiate() {
@@ -155,6 +152,7 @@ class MainViewModel: ObservableObject
                 pages.append(PageModel(id: "feedback", Title: home.Feedback))
                 pages.append(PageModel(id: "download", Title: home.Downloads))
                 pages.append(PageModel(id: "language", Title: home.Language))
+                pages.append(PageModel(id: "share", Title: home.Share))
                 
                 languageItems.removeAll()
                 languageItems.append(PageModel(id: "En", Title: "English"))

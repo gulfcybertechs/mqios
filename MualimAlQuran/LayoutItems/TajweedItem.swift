@@ -2,6 +2,7 @@ import SwiftUI
 
 struct TajweedItem: View {
     
+    @EnvironmentObject var navigation: AppNavigationRouter
     @EnvironmentObject var mvm: MainViewModel
     @Binding var item: TajweedModel
     @Binding var activeLetter: Int
@@ -9,7 +10,6 @@ struct TajweedItem: View {
     @State var title: String = ""
     @State var text: String = ""   
     @AppStorage("language") var currentLanguage = getLanguage()
-    @State var navSelection: Int? = nil
     
     var body: some View {
         
@@ -20,13 +20,12 @@ struct TajweedItem: View {
                 
                 Button(action: {
                     
+                    AppHaptics.tap()
                     mvm.loadTajweedExItems()
-                    navSelection = 0
+                    navigation.push(.tajweedExamples, in: .home)
                     
                 }) {
                     
-                    NavigationLink(destination: TajweedExView(), tag: 0, selection: $navSelection) { }
-                        .environment(\.layoutDirection, (currentLanguage == "Ar") ? .rightToLeft : .leftToRight)
                     HStack()
                     {
                         

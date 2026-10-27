@@ -2,7 +2,15 @@ import SwiftUI
 
 struct ListItem: View {
     
+    @AppStorage("language") var currentLanguage = getLanguage()
     @Binding var item: ListModel
+
+    private var titleFont: Font {
+        if currentLanguage == "Ar" {
+            return .system(size: 20, weight: .bold)
+        }
+        return .custom("opensans", size: 20)
+    }
     
     var body: some View {
                             
@@ -26,14 +34,14 @@ struct ListItem: View {
                             let title = item.Title.components(separatedBy: "<span>")
                             
                             Text(title[0])
-                                .font(.custom("opensans", size: 20))
+                                .font(titleFont)
                                 .foregroundColor(.black)
                                 .bold()
                             
                             if (title.count > 1) {
                                 
                                 Text(title[1].replacingOccurrences(of: "</span>", with: ""))
-                                    .font(.custom("opensans", size: 20))
+                                    .font(titleFont)
                                     .foregroundColor(colorResource.maroon)
                                     .bold()
                             }

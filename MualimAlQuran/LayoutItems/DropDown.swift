@@ -31,11 +31,39 @@ struct DropDown: View {
         }
     }
     
+    private var closeButton: some View {
+        Button {
+            AppHaptics.tap()
+            isPresented = false
+        } label: {
+            Image(systemName: "xmark")
+                .font(.system(size: 17, weight: .semibold))
+        }
+        .tint(.primary)
+        .accessibilityLabel(currentLanguage == "Ar" ? "إغلاق" : "Close")
+    }
+
+    @ViewBuilder
+    private var closeControl: some View {
+        if #available(iOS 26.0, *) {
+            closeButton
+                .buttonStyle(.glass)
+                .buttonBorderShape(.circle)
+                .controlSize(.large)
+        } else {
+            closeButton
+                .buttonStyle(.plain)
+                .frame(width: 44, height: 44)
+                .background(.regularMaterial, in: Circle())
+        }
+    }
+
     var body: some View {
         
         VStack {
             
             Button {
+                AppHaptics.tap()
                 
                 isPresented = true
                 
@@ -44,14 +72,14 @@ struct DropDown: View {
                 HStack {
                     
                     Text(selected)
-                        .font(.custom(hafs(), size: 16))
+                        .font(currentLanguage == "Ar" ? .system(size: 16, weight: .bold) : .custom(hafs(), size: 16))
                         .foregroundColor(colorResource.lightButtonText)
                         .frame(maxWidth: .infinity, alignment: .leading)
                         .lineLimit(1)
                         .padding(.leading, 10)
                         .padding(.trailing, 0)
-                        .padding(.top, 8)
-                        .padding(.bottom, 6)
+                        .padding(.top, currentLanguage == "Ar" ? 14 : 8)
+                        .padding(.bottom, currentLanguage == "Ar" ? 12 : 6)
                     
                     Spacer()
                     
@@ -94,8 +122,12 @@ struct DropDown: View {
                 
                 ScrollViewReader { scrollView in
                     
-                    VStack {
-                        
+                    VStack(spacing: 0) {
+                        closeControl
+                            .padding(16)
+                            .frame(maxWidth: .infinity, alignment: .trailing)
+                            .environment(\.layoutDirection, currentLanguage == "Ar" ? .rightToLeft : .leftToRight)
+
                         List {
                             
                             ForEach(items, id: \.self) { item in
@@ -111,6 +143,7 @@ struct DropDown: View {
                                 }
                                 
                                 Button {
+                                    AppHaptics.tap()
                                     
                                     if (type == "1") {
                                         
@@ -220,8 +253,12 @@ struct DropDown: View {
                             }
                             
                         }
+                        .scrollContentBackground(.hidden)
+                        .contentMargins(.top, 0, for: .scrollContent)
                     }
-                    .frame(width: width, height: height)
+                    .frame(width: width)
+                    .frame(maxHeight: height)
+                    .background(Color(uiColor: .systemGroupedBackground))
                     .task(id: isPresented) {
                         scrollView.scrollTo(selected, anchor: .center)
                     }
@@ -232,7 +269,8 @@ struct DropDown: View {
     }
 }
 
-func loadSurah(vm: RecitationViewModel, mvm: MainViewModel, surah: String, trigger: String, audioHelper: AudioHelper, callback: (() -> ())? = nil) {
+@MainActor
+func loadSurah(vm: RecitationViewModel, mvm: MainViewModel, surah: String, trigger: String, audioHelper: AudioHelper, continueAudio: Bool = false, callback: (() -> ())? = nil) {
     
     @AppStorage("language") var currentLanguage = getLanguage()
     
@@ -254,120 +292,120 @@ func loadSurah(vm: RecitationViewModel, mvm: MainViewModel, surah: String, trigg
         }
     }
     
-    if (mvm.listSelected.StageID == 7) {
-
-        audioHelper.pauseVerse()
-        vm.audioBarStatus = "play"
+    vm.surahLoadRevision = UUID()
+    vm.verseTapScrollRequest = nil
+    vm.pendingAutomaticVerseScroll = nil
+    vm.scrollTarget = "-1"
+    if !continueAudio {
+        vm.bookLayoutRevision = UUID()
+        vm.stopAudio(player: audioHelper.player, hide: mvm.listSelected.StageID != 7)
         vm.selectedItem = 0
-        vm.audioPlaying = false
+        vm.selectedWord = ""
+        vm.selectedWordVerseID = nil
     }
 
-    Task { @MainActor in
-        
-        mvm.recitationItems.removeAll()
+    var data = mvm.verseByVerse
+        .filter { $0.Surah == surah.split(separator: " ")[0] }
+        .sorted { Int($0.Ayah)! < Int($1.Ayah)! }
 
-        try! await Task.sleep(nanoseconds: 300_000_000)
+    guard !data.isEmpty else { return }
 
-        var data = mvm.verseByVerse
-            .filter { $0.Surah == surah.split(separator: " ")[0] }
-            .sorted { Int($0.Ayah)! < Int($1.Ayah)! }
+    var ayahDDItems: [String] = []
+    for i in (1...data.count) {
+        ayahDDItems.append("\(ayahText) " + i.description)
+    }
+    vm.ayah.items = ayahDDItems
 
-        var ayahDDItems: [String] = []
-        for i in (1...data.count) {
-            ayahDDItems.append("\(ayahText) " + i.description)
-        }
-        vm.ayah.items = ayahDDItems
+    if (mvm.listSelected.StageID == 7) {
 
-        if (mvm.listSelected.StageID == 7) {
+        let range = Int(vm.ayah.selected.split(separator: " ")[1])!...Int(vm.ayah.selected.split(separator: " ")[1])! + (Int(vm.page.selected.split(separator: " ")[0])! - 1)
 
-            let range = Int(vm.ayah.selected.split(separator: " ")[1])!...Int(vm.ayah.selected.split(separator: " ")[1])! + (Int(vm.page.selected.split(separator: " ")[0])! - 1)
+        data = data.filter { range.contains(Int($0.Ayah)!) }
 
-            data = data.filter { range.contains(Int($0.Ayah)!) }
+        memorizingResetTotalCounter(vm: vm)
+        memorizingResetData(vm: vm, data: data)
+    }
 
-            memorizingResetTotalCounter(vm: vm)
-            memorizingResetData(vm: vm, data: data)
-        }
+    //region Basmalah
+    if (basmalah(surah: surah, mvm: mvm)) {
 
-        //region Basmalah
-        if (basmalah(surah: surah, mvm: mvm)) {
+        let basmalahItem = mvm.verseByVerse.first{ $0.Surah == "1" }!.copy()
+        basmalahItem.Surah = data[0].Surah
+        basmalahItem.SurahName = data[0].SurahName
+        basmalahItem.SurahNameAr = data[0].SurahNameAr
+        basmalahItem.SurahNameTr = data[0].SurahNameTr
+        basmalahItem.Ayah = "0"
+        basmalahItem.Page = data[0].Page
+        basmalahItem.Juzu = data[0].Juzu
+        basmalahItem.basmalah = true
 
-            let basmalahItem = mvm.verseByVerse.first{ $0.Surah == "1" }!.copy()
-            basmalahItem.Surah = data[0].Surah
-            basmalahItem.SurahName = data[0].SurahName
-            basmalahItem.SurahNameAr = data[0].SurahNameAr
-            basmalahItem.SurahNameTr = data[0].SurahNameTr
-            basmalahItem.Ayah = "0"
-            basmalahItem.Page = data[0].Page
-            basmalahItem.Juzu = data[0].Juzu
-            basmalahItem.basmalah = true
+        data.insert(basmalahItem, at: 0)
+    }
+    //endregion
 
-            data.insert(basmalahItem, at: 0)
-        }
-        //endregion
+    mvm.recitationItems = data
+    if (!data.isEmpty) {
+        vm.surah.title = vm.surah.items.first { $0.split(separator: " ")[0] == data[0].Surah }!
+        vm.scrollTarget = "0" // Android
+    }
 
-        mvm.recitationItems = data
-        if (!data.isEmpty) {
-            vm.surah.title = vm.surah.items.first { $0.split(separator: " ")[0] == data[0].Surah }!
-            vm.scrollTarget = "0" // Android
-        }
+    if (trigger == "Surah") {
 
-        if (trigger == "Surah") {
-            
-            if (!mvm.lessonSelected.FromMemorizing) {
-                vm.ayah.title = "\(ayahText) 1"
-                vm.ayah.selected = "\(ayahText) 1"
-            }
-
-            if (mvm.listSelected.StageID != 7) {
-
-                vm.page.title = "\(mvm.home.Page) \(data[0].Page)"
-                vm.page.selected = "\(mvm.home.Page) \(data[0].Page)"
-
-                vm.juzu.title = "\(juzuText) \(data[0].Juzu)"
-                vm.juzu.selected = "\(juzuText) \(data[0].Juzu)"
-            }
+        if (!mvm.lessonSelected.FromMemorizing) {
+            vm.ayah.title = "\(ayahText) 1"
+            vm.ayah.selected = "\(ayahText) 1"
         }
 
         if (mvm.listSelected.StageID != 7) {
-            
-            if (trigger == "Page" || trigger == "Juzu") {
 
-                vm.surah.title = vm.surah.items.first { $0.split(separator: " ")[0] == data[0].Surah }!
-                vm.surah.selected = vm.surah.items.first { $0.split(separator: " ")[0] == data[0].Surah }!
-            }
+            vm.page.title = "\(mvm.home.Page) \(data[0].Page)"
+            vm.page.selected = "\(mvm.home.Page) \(data[0].Page)"
 
-
-            if (trigger == "Page") {
-
-                let ayahToSelect = mvm.recitationItems.first { $0.Page == vm.page.selected.split(separator: " ")[1] }!.Ayah
-
-                vm.ayah.title = "\(ayahText) \(ayahToSelect)"
-                vm.ayah.selected = "\(ayahText) \(ayahToSelect)"
-
-                vm.juzu.title = "\(juzuText) \(data[0].Juzu)"
-                vm.juzu.selected = "\(juzuText) \(data[0].Juzu)"
-                
-                vm.scrollTarget = mvm.recitationItems.first{ $0.Page == vm.page.selected.split(separator: " ")[1] }!.id.description
-            }
-
-            if (trigger == "Juzu") {
-
-                let ayahToSelect = mvm.recitationItems.first { $0.Juzu == vm.juzu.selected.split(separator: " ")[1] }!.Ayah
-
-                vm.ayah.title = "\(ayahText) \(ayahToSelect)"
-                vm.ayah.selected = "\(ayahText) \(ayahToSelect)"
-
-                vm.page.title = "\(mvm.home.Page) \(data[0].Page)"
-                vm.page.selected = "\(mvm.home.Page) \(data[0].Page)"
-
-                vm.scrollTarget = mvm.recitationItems.first{ $0.Juzu == vm.juzu.selected.split(separator: " ")[1] }!.id.description
-            }
+            vm.juzu.title = "\(juzuText) \(data[0].Juzu)"
+            vm.juzu.selected = "\(juzuText) \(data[0].Juzu)"
         }
-        
-        callback?()
     }
+
+    if (mvm.listSelected.StageID != 7) {
+
+        if (trigger == "Page" || trigger == "Juzu") {
+
+            vm.surah.title = vm.surah.items.first { $0.split(separator: " ")[0] == data[0].Surah }!
+            vm.surah.selected = vm.surah.items.first { $0.split(separator: " ")[0] == data[0].Surah }!
+        }
+
+
+        if (trigger == "Page") {
+
+            let ayahToSelect = mvm.recitationItems.first { $0.Page == vm.page.selected.split(separator: " ")[1] }!.Ayah
+
+            vm.ayah.title = "\(ayahText) \(ayahToSelect)"
+            vm.ayah.selected = "\(ayahText) \(ayahToSelect)"
+
+            vm.juzu.title = "\(juzuText) \(data[0].Juzu)"
+            vm.juzu.selected = "\(juzuText) \(data[0].Juzu)"
+
+            vm.scrollTarget = mvm.recitationItems.first{ $0.Page == vm.page.selected.split(separator: " ")[1] }!.id.description
+        }
+
+        if (trigger == "Juzu") {
+
+            let ayahToSelect = mvm.recitationItems.first { $0.Juzu == vm.juzu.selected.split(separator: " ")[1] }!.Ayah
+
+            vm.ayah.title = "\(ayahText) \(ayahToSelect)"
+            vm.ayah.selected = "\(ayahText) \(ayahToSelect)"
+
+            vm.page.title = "\(mvm.home.Page) \(data[0].Page)"
+            vm.page.selected = "\(mvm.home.Page) \(data[0].Page)"
+
+            vm.scrollTarget = mvm.recitationItems.first{ $0.Juzu == vm.juzu.selected.split(separator: " ")[1] }!.id.description
+        }
+    }
+
+    callback?()
 }
 
+@MainActor
 func loadMemorizingAyah(vm: RecitationViewModel, mvm: MainViewModel, trigger: String, audioHelper: AudioHelper) {
     
     @AppStorage("language") var currentLanguage = getLanguage()

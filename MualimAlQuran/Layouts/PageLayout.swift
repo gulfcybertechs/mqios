@@ -3,8 +3,8 @@ import SwiftSoup
 
 struct PageLayout: View {
     
+    @AppStorage("language") var currentLanguage = getLanguage()
     @EnvironmentObject var mvm: MainViewModel
-    @Environment(\.dismiss) private var dismiss
     
     @State var safeArea = UIApplication.shared.firstKeyWindow?.safeAreaInsets
     
@@ -24,8 +24,8 @@ struct PageLayout: View {
                         Spacer().frame(height: 40)
                         
                         Text(mvm.pageSelected.Title)
-                            .font(.custom("opensans", size: 26))
-                            .fontWeight(.medium)
+                            .font(currentLanguage == "Ar" ? .system(size: 26, weight: .bold) : .custom("opensans", size: 26))
+                            .fontWeight(currentLanguage == "Ar" ? .bold : .medium)
                             .foregroundStyle(.black)
                             .multilineTextAlignment(.center)
                             .frame(maxWidth: .infinity, alignment: .leading)
@@ -61,14 +61,12 @@ struct PageLayout: View {
         .padding(.trailing, 15)
         .navigationBarHidden(true)
         .frame(maxWidth: .infinity)
-        .clipped()
+        .clipShape(PageBottomOverflowClip(), style: FillStyle(antialiased: false))
         .ignoresSafeArea(.all, edges: [.top, .leading, .trailing])
         .onAppear {
-            mvm.viewLevel = "page"
-            mvm.back = false                        
-        }
-        .task(id: mvm.back) {
-            if (mvm.back) { mvm.back = false; dismiss(); }
+            if let insets = UIApplication.shared.firstKeyWindow?.safeAreaInsets {
+                safeArea = insets
+            }
         }
         .onRotate { newOrientation in
             

@@ -23,6 +23,18 @@ class ListModel: ObservableObject, Identifiable, Decodable {
     var MemorizingSurah: String = ""
     var MemorizingSurahName: String = ""
     var MemorizingAyah: String = ""
+
+    // These two Tajweed readers always teach with colors, without changing the saved toggle.
+    var requiresTajweedColors: Bool {
+        StageID == 3 && [52, 97].contains(id)
+    }
+
+    // Shared by the reader controls and the tap-to-play preference.
+    var supportsRecitationReadingControls: Bool {
+        StageID == 2
+            || (StageID == 5 && [1, 2].contains(Number))
+            || (StageID == 3 && [-1, -2].contains(Number))
+    }
     
     init() {
         

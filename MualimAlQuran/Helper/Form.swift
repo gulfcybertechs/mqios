@@ -7,9 +7,11 @@ enum Fields: Hashable {
 struct TextBox: View {
     
     @EnvironmentObject var mvm: MainViewModel
+    @AppStorage("language") private var currentLanguage = getLanguage()
     
     @State var type: Fields
-    @State var label: String
+    // The parent supplies the current localized label; never cache its previous language.
+    let label: String
     @Binding var value: String
     @Binding var valid: Bool
     @Binding var errorMessage: String
@@ -22,13 +24,15 @@ struct TextBox: View {
     
     var body: some View {
         
+        // Only the text controls use a fixed direction so trailing means physical right.
+        // The containing row still inherits RTL for its password and validation icons.
         HStack(spacing: 0) {
             
             if (isPassword && !passwordVisible) {
-                SecureField(label, text: $value)
-                    .placeholder(when: value.isEmpty) {
-                        Text(label).foregroundStyle(colorResource.grey)
-                    }
+                SecureField(label, text: $value,
+                    prompt: Text(label).foregroundStyle(colorResource.grey))
+                    .multilineTextAlignment(currentLanguage == "Ar" ? .trailing : .leading)
+                    .environment(\.layoutDirection, .leftToRight)
                     .autocapitalization(.none)
                     .autocorrectionDisabled()
                     .focused(keyboardFocused, equals: type)
@@ -36,19 +40,21 @@ struct TextBox: View {
             }
             else if (isMulti) {
                 TextEditor(text: $value)
-                    .placeholder(when: value.isEmpty) {
+                    .multilineTextAlignment(currentLanguage == "Ar" ? .trailing : .leading)
+                    .placeholder(when: value.isEmpty, alignment: currentLanguage == "Ar" ? .trailing : .leading) {
                         Text(label).foregroundStyle(colorResource.grey)
                     }
                     .autocapitalization(.none)
                     .focused(keyboardFocused, equals: type)
                     .submitLabel(.done)
                     .frame(minHeight: 100)
+                    .environment(\.layoutDirection, .leftToRight)
             }
             else {
-                TextField(label, text: $value)
-                    .placeholder(when: value.isEmpty) {
-                        Text(label).foregroundStyle(colorResource.grey)
-                    }
+                TextField(label, text: $value,
+                    prompt: Text(label).foregroundStyle(colorResource.grey))
+                    .multilineTextAlignment(currentLanguage == "Ar" ? .trailing : .leading)
+                    .environment(\.layoutDirection, .leftToRight)
                     .autocapitalization(.none)
                     .focused(keyboardFocused, equals: type)
                     .keyboardType((label == mvm.home.Email) ? .emailAddress : .default)
@@ -83,7 +89,7 @@ struct TextBox: View {
             RoundedRectangle(cornerRadius: 4).stroke(colorResource.lightButton, lineWidth: 1)
         }
         .foregroundColor(colorResource.lightButtonText)        
-        .onChange(of: value) { it in
+        .onChange(of: value) { _, it in
                         
             valid = validateField(button: false, current: valid, type: type, value: it, errorMessage: &errorMessage)
         }
@@ -213,7 +219,7 @@ func pushMemorizing(type: String, item: Memorizing) async {
     }
 }
 
-func syncMemorizing(vmAccount: AccountViewModel?, mvm: MainViewModel) async {
+@MainActor func syncMemorizing(vmAccount: AccountViewModel?, mvm: MainViewModel) async {
 
     if (getUser(type: "ID") != "") {
         
@@ -229,37 +235,35 @@ func syncMemorizing(vmAccount: AccountViewModel?, mvm: MainViewModel) async {
                     
                     UserDefaults.standard.removeObject(forKey: "MemorizingProgress")
                     
-                    DispatchQueue.main.async {
-                        
-                        let onlineData = try! JSONDecoder().decode([Memorizing].self, from: user.Memorizing.data(using: .utf8)!)
-                        
-                        onlineData.forEach { it in
-                            
-                            setMemorizing(userID: getUser(type: "ID"),
-                                          surah: it.Surah,
-                                          surahName: it.SurahName,
-                                          ayah: it.Ayah,
-                                          verses: it.Verses,
-                                          repetitions: it.Repetitions,
-                                          _from: it._From,
-                                          push: false,
-                                          date: it.NewDate)
-                        }
-                        loadMemorizing(vm: vmAccount!, mvm: mvm)
-                        
-                        if (!mvm.recitationItems.isEmpty) {
-                            mvm.recitationItems.forEach { it in
-                                
-                                if (isMemorized(userID: getUser(type: "ID"), surah: it.Surah, ayah: it.Ayah)) {
-                                    it.memorized = true
-                                } else {
-                                    it.memorized = false
-                                }
+
+                    let onlineData = try! JSONDecoder().decode([Memorizing].self, from: user.Memorizing.data(using: .utf8)!)
+
+                    onlineData.forEach { it in
+
+                        setMemorizing(userID: getUser(type: "ID"),
+                                      surah: it.Surah,
+                                      surahName: it.SurahName,
+                                      ayah: it.Ayah,
+                                      verses: it.Verses,
+                                      repetitions: it.Repetitions,
+                                      _from: it._From,
+                                      push: false,
+                                      date: it.NewDate)
+                    }
+                    loadMemorizing(vm: vmAccount!, mvm: mvm)
+
+                    if (!mvm.recitationItems.isEmpty) {
+                        mvm.recitationItems.forEach { it in
+
+                            if (isMemorized(userID: getUser(type: "ID"), surah: it.Surah, ayah: it.Ayah)) {
+                                it.memorized = true
+                            } else {
+                                it.memorized = false
                             }
                         }
-                        
-                        vmAccount?.sync = false
                     }
+
+                    vmAccount?.sync = false
                 }
             }
         }

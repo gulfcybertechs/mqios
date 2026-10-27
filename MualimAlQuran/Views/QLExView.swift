@@ -2,6 +2,7 @@ import SwiftUI
 
 struct QLExView: View {
     
+    @AppStorage("language") var currentLanguage = getLanguage()
     @EnvironmentObject var mvm: MainViewModel
     @State var activeLetter = -1
     @State var activeVerse = ""
@@ -9,7 +10,6 @@ struct QLExView: View {
     @State var itemSpacing = 0.0
     @State var player = Player()
     @State var audioHelper: AudioHelper = AudioHelper(player: .constant(Player()))
-    @Environment(\.dismiss) private var dismiss
     
     @State var safeArea = UIApplication.shared.firstKeyWindow?.safeAreaInsets
     
@@ -28,7 +28,7 @@ struct QLExView: View {
                         //region Header
                         Spacer().frame(height: 10)
                         Text(mvm.lessonSelected.Title.components(separatedBy: "<span>")[0])
-                            .font(.custom("opensans", size: 22))
+                            .font(currentLanguage == "Ar" ? .system(size: 22, weight: .bold) : .custom("opensans", size: 22))
                             .bold()
                             .lineSpacing(8)
                             .multilineTextAlignment(.center)
@@ -38,7 +38,7 @@ struct QLExView: View {
                             .padding(.trailing, 20)
                         
                         Text(mvm.qlItems.first { $0.id == mvm.lessonSelected.Number + 100000 }!.Examples)
-                            .font(.custom("opensans", size: 20))
+                            .font(currentLanguage == "Ar" ? .system(size: 20, weight: .regular) : .custom("opensans", size: 20))
                             .foregroundColor(colorResource.maroon)
                             .lineSpacing(6)
                             .multilineTextAlignment(.center)
@@ -60,28 +60,23 @@ struct QLExView: View {
                                     let item = $mvm.qlExItems[index].wrappedValue
                                     
                                     Button(action: {
+                                        AppHaptics.tap()
                                         
                                         activeLetter = index
                                         
-                                        Task {
-                                            
-                                            let Surah = item.Verse.trim().replacingOccurrences(of: "[", with: "").replacingOccurrences(of: "]", with: "").split(separator: ":")[0].description
-                                            let Ayah = item.Verse.trim().replacingOccurrences(of: "[", with: "").replacingOccurrences(of: "]", with: "").split(separator: ":")[1].description
-                                            
-                                            let selectedVerseAudioFileName = audioHelper.audioName(name: Surah) + "" + audioHelper.audioName(name: Ayah) + ".mp3"
-                                            
-                                            audioHelper.downloadVerse(
-                                                fileName: "/recitation/2/\(selectedVerseAudioFileName)",
-                                                url: URL(string: "https://mualim-alquran.com/recitation/2/\(selectedVerseAudioFileName)")!
-                                            ) {
-                                                
-                                                DispatchQueue.main.async {
-                                                    
-                                                    audioHelper.playVerse(audioFileName: "/recitation/2/\(selectedVerseAudioFileName)") {
-                                                        
-                                                        activeLetter = -1
-                                                    }
-                                                }
+                                        let Surah = item.Verse.trim().replacingOccurrences(of: "[", with: "").replacingOccurrences(of: "]", with: "").split(separator: ":")[0].description
+                                        let Ayah = item.Verse.trim().replacingOccurrences(of: "[", with: "").replacingOccurrences(of: "]", with: "").split(separator: ":")[1].description
+
+                                        let selectedVerseAudioFileName = audioHelper.audioName(name: Surah) + "" + audioHelper.audioName(name: Ayah) + ".mp3"
+
+                                        audioHelper.downloadVerse(
+                                            fileName: "/recitation/2/\(selectedVerseAudioFileName)",
+                                            url: URL(string: "https://mualim-alquran.com/recitation/2/\(selectedVerseAudioFileName)")!
+                                        ) {
+
+                                            audioHelper.playVerse(audioFileName: "/recitation/2/\(selectedVerseAudioFileName)") {
+
+                                                activeLetter = -1
                                             }
                                         }
                                     }) {
@@ -136,14 +131,14 @@ struct QLExView: View {
         }
         .navigationBarHidden(true)
         .frame(maxWidth: .infinity)
-        .clipped()
+        .clipShape(PageBottomOverflowClip(), style: FillStyle(antialiased: false))
         .ignoresSafeArea(.all, edges: [.top, .leading, .trailing])
         .onAppear {
+            if let insets = UIApplication.shared.firstKeyWindow?.safeAreaInsets {
+                safeArea = insets
+            }
             
             audioHelper = AudioHelper(player: $player)
-            
-            mvm.viewLevel = "qlEx"
-            mvm.back = false
             
             layoutPadding = mainLayoutPadding(items: mvm.stageLessons)
             itemSpacing = listItemSpacing(items: mvm.stageLessons)
@@ -154,12 +149,6 @@ struct QLExView: View {
                 activeLetter = -1
             }
         })
-        .task(id: mvm.backForce) {
-            if (mvm.backForce) { dismiss() }
-        }
-        .task(id: mvm.back) {
-            if (mvm.back) { mvm.back = false; dismiss(); }
-        }
         .onRotate { newOrientation in
             
             Task {

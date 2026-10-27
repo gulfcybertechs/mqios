@@ -225,12 +225,9 @@ struct TajweedExampleBody: View {
                                 url: URL(string: "https://mualim-alquran.com/\(verseAudio)")!
                             ) {
                                 
-                                DispatchQueue.main.async {
-                                    
-                                    audioHelper.playVerse(audioFileName: verseAudio) {
-                                        
-                                        activeLetter = -1
-                                    }
+                                audioHelper.playVerse(audioFileName: verseAudio) {
+
+                                    activeLetter = -1
                                 }
                             }
                         }

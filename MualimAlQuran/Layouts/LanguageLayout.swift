@@ -3,9 +3,9 @@ import SwiftSoup
 
 struct LanguageLayout: View {
     
+    @EnvironmentObject var navigation: AppNavigationRouter
     @EnvironmentObject var mvm: MainViewModel
     @EnvironmentObject var sheetVM: BottomSheetViewModel
-    @Environment(\.dismiss) private var dismiss
     
     @AppStorage("language") var currentLanguage = getLanguage()
     
@@ -27,8 +27,8 @@ struct LanguageLayout: View {
                         Spacer().frame(height: 40)
                         
                         Text(mvm.pages.first{ $0.id == "language" }?.Title ?? "")
-                            .font(.custom("opensans", size: 26))
-                            .fontWeight(.medium)
+                            .font(currentLanguage == "Ar" ? .system(size: 26, weight: .bold) : .custom("opensans", size: 26))
+                            .fontWeight(currentLanguage == "Ar" ? .bold : .medium)
                             .foregroundStyle(.black)
                             .multilineTextAlignment(.center)
                             .frame(maxWidth: .infinity, alignment: .leading)
@@ -71,9 +71,8 @@ struct LanguageLayout: View {
                                                     mvm.initiate()
                                                     
                                                     try! await Task.sleep(nanoseconds: 1000_000_000)
-                                                    dismiss()
                                                     try! await Task.sleep(nanoseconds: 800_000_000)
-                                                    mvm.backForce = true
+                                                    navigation.resetAll()
                                                     mvm.selectedTab = Tab.home
                                                     try! await Task.sleep(nanoseconds: 1000_000_000)
                                                     sheetVM.sheetState = false
@@ -125,14 +124,12 @@ struct LanguageLayout: View {
         .padding(.trailing, 15)
         .navigationBarHidden(true)
         .frame(maxWidth: .infinity)
-        .clipped()
+        .clipShape(PageBottomOverflowClip(), style: FillStyle(antialiased: false))
         .ignoresSafeArea(.all, edges: [.top, .leading, .trailing])
         .onAppear {
-            //mvm.viewLevel = "page"
-            mvm.back = false                        
-        }
-        .task(id: mvm.back) {
-            if (mvm.back) { mvm.back = false; dismiss(); }
+            if let insets = UIApplication.shared.firstKeyWindow?.safeAreaInsets {
+                safeArea = insets
+            }
         }
         .onRotate { newOrientation in
             

@@ -1,5 +1,6 @@
 import WebKit
 import SwiftUI
+import UIKit
 
 func loadJson<T: Decodable>(_ filename: String) -> T {
     var data: String
@@ -544,7 +545,9 @@ func letterColorIndex(index: Int) -> String {
     return _color
 }
 
-func letterPlay(lesson: ListModel, item: LessonModel, player: Player) async -> Bool {
+@MainActor func letterPlay(lesson: ListModel, item: LessonModel, player: Player,
+                           navigationRevision: UUID) async -> Bool {
+    guard AppNavigationAudio.revision == navigationRevision else { return false }
     
     var audioLessonNumber = String(lesson.Number)
     if (lesson.Number == 2 || lesson.Number == 7) {
@@ -585,9 +588,10 @@ func letterPlayByName(name: String, player: Player, callback: (() -> ())? = nil)
     }
 }
 
-func qLPlay(index: Int, voc: Bool = false, vocSection2: Bool = false,mvm: MainViewModel, player: Player, callback: (() -> ())? = nil) {
-
+@MainActor func qLPlay(index: Int, voc: Bool = false, vocSection2: Bool = false,mvm: MainViewModel, player: Player, callback: (() -> ())? = nil) {
+    let navigationRevision = AppNavigationAudio.revision
     Task {
+        guard AppNavigationAudio.revision == navigationRevision else { return }
         var audioFileName = "L\(mvm.lessonSelected.Number)_W\(index)"
         
         if (voc) {
@@ -731,12 +735,16 @@ func getReciterAr(id: String) -> String {
 
 func basmalah(surah: String, mvm: MainViewModel) -> Bool {
 
+    // Callers pass either a number or a dropdown label such as "1 FÂTIḤAH".
+    // Compare the number so Surahs 1 and 9 never receive a synthetic Bismillah.
+    let surahNumber = surah.split(separator: " ").first?.description ?? surah
+
     return if ((mvm.lessonSelected.StageID == 2 && mvm.lessonSelected.Number == 5) ||
         (mvm.lessonSelected.StageID == 2 && mvm.lessonSelected.Number == 6) ||
         (mvm.lessonSelected.StageID == 5 && mvm.lessonSelected.Number == 2) ||
         (mvm.lessonSelected.StageID == 3 && mvm.lessonSelected.id == 97)
     ) {
-        surah != "1" && surah != "9"
+        surahNumber != "1" && surahNumber != "9"
     }
     else {
         false
@@ -1071,4 +1079,20 @@ func hafs() -> String {
     }
 
     return "KFGQPCHAFSUthmanicScript-Regula"
+}
+
+// Shared by explicit navigation taps; never attached to scrolling gestures.
+@MainActor
+enum AppHaptics {
+    private static let impact = UIImpactFeedbackGenerator(style: .light)
+    private static var lastTapTime: TimeInterval?
+
+    static func tap() {
+        let now = ProcessInfo.processInfo.systemUptime
+        // UIKit may consult both tab-delegate overloads for one physical tap.
+        if let lastTapTime, now - lastTapTime < 0.05 { return }
+        lastTapTime = now
+        impact.impactOccurred()
+        impact.prepare()
+    }
 }

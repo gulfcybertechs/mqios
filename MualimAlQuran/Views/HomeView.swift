@@ -2,6 +2,7 @@ import SwiftUI
 
 struct HomeView: View {
     
+    @EnvironmentObject var navigation: AppNavigationRouter
     @EnvironmentObject var mvm: MainViewModel
     @State var layoutPadding = 0.0
     @State var itemSpacing = 0.0
@@ -24,16 +25,16 @@ struct HomeView: View {
                             .resizable()
                             .aspectRatio(contentMode: .fit)
                             .frame(height: 110)
-                            .padding(.bottom, 5)
+                            .padding(.bottom, currentLanguage == "Ar" ? 9 : 5)
                         
                         Text((currentLanguage == "Ar") ? "مُــعَــلِّــمُ الـــقُـــرْآنْ" : "Mu'alim Al-Qur'an")
-                            .font(.custom("opensans", size: 22))
+                            .font(currentLanguage == "Ar" ? .system(size: 26, weight: .bold) : .custom("opensans", size: 22))
                             .bold()
                             .multilineTextAlignment(.center)
                             .padding(.bottom, 5)
                         
                         Text(mvm.home.Title.replacingOccurrences(of: "<span>", with: "").replacingOccurrences(of: "</span>", with: ""))
-                            .font(.custom("opensans", size: 20))
+                            .font(currentLanguage == "Ar" ? .system(size: 20, weight: .regular) : .custom("opensans", size: 20))
                             .foregroundColor(colorResource.maroon)
                             .lineSpacing(6)
                             .multilineTextAlignment(.center)
@@ -56,6 +57,7 @@ struct HomeView: View {
                                         if (item.id == 7) {
                                             
                                             Button(action:{
+                                                AppHaptics.tap()
                                                 
                                                 let lessonItem = item
                                                 lessonItem.StageID.wrappedValue = 7
@@ -65,25 +67,24 @@ struct HomeView: View {
                                                 mvm.listSelected = item.wrappedValue
                                                 mvm.lessonSelected = lessonItem.wrappedValue
                                                 mvm.recitationItems = mvm.verse1
-                                                mvm.homeNavSelection = item.id
+                                                navigation.push(.recitation(stageID: 7), in: .home)
                                                 
                                             }) {
-                                                NavigationLink(destination: RecitationView(), tag: item.id, selection: $mvm.homeNavSelection) { }
                                                 ListItem(item: item)
                                             }
                                             
                                         } else {
                                             
                                             Button(action: {
+                                                AppHaptics.tap()
                                                 
                                                 mvm.listType = "stage"
                                                 mvm.listSelected = item.wrappedValue
                                                 mvm.stageTab = ListModel(isTab: true, TabIndex: "101")
                                                 mvm.loadStageLessons(item: mvm.listSelected)
-                                                mvm.homeNavSelection = item.id
+                                                navigation.push(.stage(item.id), in: .home)
                                                 
                                             }) {
-                                                NavigationLink(destination: StageView(stage: item), tag: item.id, selection: $mvm.homeNavSelection) { }
                                                 ListItem(item: item)
                                             }
                                         }
@@ -115,23 +116,6 @@ struct HomeView: View {
         .navigationBarHidden(true)
         .frame(maxWidth: .infinity)
         .onAppear {
-            
-            mvm.viewLevel = "home"
-            mvm.back = false
-            mvm.backForce = false
-            
-            if (mvm.navigateToMemorizing) {
-                mvm.navigateToMemorizing = false
-                
-                DispatchQueue.main.asyncAfter(deadline: .now() + 0.4) {
-                    mvm.homeScroll = 7
-                    
-                    DispatchQueue.main.asyncAfter(deadline: .now() + 0.4) {
-                        mvm.homeNavSelection = 7
-                    }
-                }
-            }
-            
             layoutPadding = mainLayoutPadding(items: mvm.stages)
             itemSpacing = listItemSpacing(items: mvm.stages)
             

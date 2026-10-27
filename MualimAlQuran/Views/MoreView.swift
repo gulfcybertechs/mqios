@@ -2,17 +2,14 @@ import SwiftUI
 
 struct MoreView: View {
     
+    @EnvironmentObject var navigation: AppNavigationRouter
     @EnvironmentObject var mvm: MainViewModel
     
-    @State var navSelection: Int? = nil
     
     @AppStorage("language") var currentLanguage = getLanguage()
     
     var body: some View {
         
-        NavigationLink(destination: PageLayout(), tag: 0, selection: $navSelection) { }
-        NavigationLink(destination: DownloadLayout(), tag: 5, selection: $navSelection) { }
-        NavigationLink(destination: LanguageLayout(), tag: 6, selection: $navSelection) { }
         
         
         VStack(spacing: 0) {
@@ -27,8 +24,8 @@ struct MoreView: View {
                         Spacer().frame(height: 40)
                         
                         Text(mvm.home.InfoSettings)
-                            .font(.custom("opensans", size: 28))
-                            .fontWeight(.medium)
+                            .font(currentLanguage == "Ar" ? .system(size: 28, weight: .bold) : .custom("opensans", size: 28))
+                            .fontWeight(currentLanguage == "Ar" ? .bold : .medium)
                             .foregroundStyle(.black)
                             .multilineTextAlignment(.center)
                             .frame(maxWidth: .infinity, alignment: .center)
@@ -56,15 +53,17 @@ struct MoreView: View {
                                     VStack {
                                         
                                         Button(action: {
+                                            AppHaptics.tap()
                                             
                                             mvm.pageSelected = item.wrappedValue
                                             if (item.id == "language") {
-                                                mvm.viewLevel = "page"
-                                                navSelection = 6
+                                                navigation.push(.language, in: .more)
                                             } else if (item.id == "download") {                                                
-                                                navSelection = 5
+                                                navigation.push(.downloads, in: .more)
+                                            } else if (item.id == "share") {
+                                                navigation.push(.share, in: .more)
                                             } else {
-                                                navSelection = 0
+                                                navigation.push(.infoPage(item.id), in: .more)
                                             }
                                             
                                         })
@@ -75,6 +74,7 @@ struct MoreView: View {
                                                 {
                                                     
                                                     Text(item.Title.wrappedValue)
+                                                        .fontWeight(currentLanguage == "Ar" ? .bold : nil)
                                                     
                                                     Spacer()
                                                     
@@ -113,9 +113,6 @@ struct MoreView: View {
                     .padding(.trailing, 15)
                 }
             }
-        }
-        .onAppear {
-            mvm.viewLevel = "menu"
         }
     }
 }

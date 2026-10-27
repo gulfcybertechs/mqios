@@ -3,13 +3,15 @@ import UIKit
 
 // Shared with the preserved navigation and MainViewModel.
 enum Tab: String, CaseIterable {
+    // Keep the legacy share case for the preserved navigation files;
+    // its center slot is now the dedicated Quran reader in NavView.
     case home, account, share, lang, more
 
     var text: String {
         switch self {
         case .home: return "Home"
         case .account: return "Account"
-        case .share: return "Share"
+        case .share: return "Qur’an"
         case .lang: return "Language"
         case .more: return "More"
         }
@@ -17,8 +19,88 @@ enum Tab: String, CaseIterable {
 
 }
 
+// Route identities describe screens; mutable lesson/reader data stays in its
+// existing view models. Each tab retains its own independent history.
+enum AccountPage: Hashable {
+    case forgot, create, google, apple
+}
+
+enum AppRoute: Hashable {
+    case stage(Int)
+    case tajweedRules
+    case lesson(Int)
+    case recitation(stageID: Int)
+    case ql, qlVocabulary, qlExamples
+    case tajweed, tajweedExamples
+    case infoPage(String), downloads, language, share
+    case account(AccountPage)
+}
+
+@MainActor
+final class AppNavigationRouter: ObservableObject {
+    @Published private(set) var paths: [Tab: [AppRoute]] = [:]
+    var didRemoveRoutes: ((Tab, [AppRoute]) -> Void)?
+
+    func path(for tab: Tab) -> [AppRoute] { paths[tab] ?? [] }
+
+    func canGoBack(in tab: Tab) -> Bool { !path(for: tab).isEmpty }
+
+    func binding(for tab: Tab) -> Binding<[AppRoute]> {
+        Binding(get: { self.path(for: tab) }, set: { self.setPath($0, in: tab) })
+    }
+
+    func push(_ route: AppRoute, in tab: Tab) {
+        var next = path(for: tab)
+        guard next.last != route else { return }
+        next.append(route)
+        setPath(next, in: tab)
+    }
+
+    @discardableResult
+    func goBack(in tab: Tab) -> Bool {
+        var next = path(for: tab)
+        guard !next.isEmpty else { return false }
+        next.removeLast()
+        setPath(next, in: tab)
+        return true
+    }
+
+    func returnToRoot(in tab: Tab) { setPath([], in: tab) }
+
+    func showAccountPage(_ page: AccountPage) {
+        // These forms replace the inline login content; they cannot nest.
+        setPath([.account(page)], in: .account)
+    }
+
+    func resetAll() {
+        // One audio cancellation for the complete explicit reset.
+        let removed = paths
+        paths = [:]
+        // A root Quran reader can be playing even when every path is empty.
+        AppNavigationAudio.stopForBack()
+        for (tab, routes) in removed where !routes.isEmpty {
+            didRemoveRoutes?(tab, routes)
+        }
+    }
+
+    func setPath(_ next: [AppRoute], in tab: Tab) {
+        let previous = path(for: tab)
+        guard previous != next else { return }
+        let sharedCount = zip(previous, next).prefix(while: { $0.0 == $0.1 }).count
+        let removed = Array(previous.dropFirst(sharedCount))
+        paths[tab] = next
+        // Native Back/swipe writes this same binding. A programmatic pop has
+        // already committed it, so a repeated native write cannot stop twice.
+        if !removed.isEmpty {
+            AppNavigationAudio.stopForBack()
+            didRemoveRoutes?(tab, removed)
+        }
+    }
+}
+
 struct NavView: View {
     @EnvironmentObject var mvm: MainViewModel
+    @StateObject private var navigation = AppNavigationRouter()
     @AppStorage("language") private var currentLanguage = getLanguage()
     @Environment(\.colorScheme) private var colorScheme
 
@@ -27,14 +109,7 @@ struct NavView: View {
         // with the iOS 26 SDK or later, and a standard tab bar on older iOS.
         TabView(selection: $mvm.selectedTab) {
             ForEach(Tab.allCases, id: \.self) { tab in
-                NavigationView {
-                    ZStack {
-                        AppBG()
-                        destination(for: tab)
-                    }
-                    .navigationBarHidden(true)
-                }
-                .navigationViewStyle(.stack)
+                tabStack(for: tab)
                 .tag(tab)
                 .tabItem {
                     icon(for: tab)
@@ -42,9 +117,20 @@ struct NavView: View {
                 }
             }
         }
-        .background(TabBarBackAction(onReselect: goBackInSelectedTab))
+        .environmentObject(navigation)
+        .background(TabBarBackAction(isArabic: currentLanguage == "Ar", onReselect: goBackInSelectedTab))
         .tint(colorResource.primary_500)
         .ignoresSafeArea(.keyboard)
+        .onAppear {
+            navigation.didRemoveRoutes = { [weak mvm, weak navigation] tab, removed in
+                // Leaving memorization retains its original selection cleanup.
+                // Switching tabs keeps the path and does not execute this.
+                if tab == .home, removed.contains(.recitation(stageID: 7)),
+                   navigation?.path(for: .home).contains(.recitation(stageID: 7)) != true {
+                    mvm?.listSelected = ListModel()
+                }
+            }
+        }
     }
 
     private func icon(for tab: Tab) -> Image {
@@ -55,7 +141,7 @@ struct NavView: View {
         switch tab {
         case .home: return symbolIcon(named: "home", for: tab)
         case .account: return symbolIcon(named: "account", for: tab)
-        case .share: return symbolIcon(named: "share", for: tab)
+        case .share: return symbolIcon(named: "quran-tab", for: tab)
         case .lang: return Image(uiImage: languageIcon).renderingMode(.original)
         case .more: return symbolIcon(named: "menu", for: tab)
         }
@@ -66,33 +152,14 @@ struct NavView: View {
     }
 
     private func showsBack(for tab: Tab) -> Bool {
-        // Only the visible tab's screen level can describe its back action.
-        guard mvm.selectedTab == tab else { return false }
-        switch tab {
-        case .home: return mvm.backLevels.contains(mvm.viewLevel)
-        case .account: return mvm.accountBackLevels.contains(mvm.accountViewLevel)
-        case .more: return mvm.menuBackLevels.contains(mvm.viewLevel)
-        case .share, .lang: return false
-        }
+        mvm.selectedTab == tab && navigation.canGoBack(in: tab)
     }
 
     private func goBackInSelectedTab(nativeIndex: Int) -> Bool {
-        // A pending programmatic tab change must not route a tap to another tab.
+        // Reject callbacks for a tab whose programmatic selection is pending.
         guard Tab.allCases.indices.contains(nativeIndex),
               Tab.allCases[nativeIndex] == mvm.selectedTab else { return false }
-        guard showsBack(for: mvm.selectedTab) else { return false }
-        switch mvm.selectedTab {
-        case .home, .more:
-            guard !mvm.back else { return true }
-            mvm.back = true
-        case .account:
-            guard !mvm.accountBack else { return true }
-            mvm.accountBack = true
-        case .share, .lang:
-            return false
-        }
-        UIImpactFeedbackGenerator(style: .light).impactOccurred()
-        return true
+        return navigation.goBack(in: mvm.selectedTab)
     }
 
     private func symbolIcon(named name: String, for tab: Tab) -> Image {
@@ -104,10 +171,9 @@ struct NavView: View {
         // NavViewOld used Color.secondary for inactive symbols. Render that
         // color into the image so the native bar preserves it instead of
         // applying its own inactive tint. Selected symbols keep the green tint.
-        let traits = UITraitCollection(traitsFrom: [
-            .current,
-            UITraitCollection(userInterfaceStyle: colorScheme == .dark ? .dark : .light)
-        ])
+        let traits = UITraitCollection.current.modifyingTraits {
+            $0.userInterfaceStyle = colorScheme == .dark ? .dark : .light
+        }
         let inactiveColor = UIColor(Color.secondary).resolvedColor(with: traits)
         return Image(uiImage: image.withTintColor(inactiveColor, renderingMode: .alwaysOriginal))
             .renderingMode(.original)
@@ -141,16 +207,105 @@ struct NavView: View {
         .withRenderingMode(.alwaysOriginal)
     }
 
-    // Keep the existing NavigationView containers while the screens still
-    // use NavigationLink(tag:selection:). Migrate those in a separate step.
+    @ViewBuilder
+    private func tabStack(for tab: Tab) -> some View {
+        if tab == .account {
+            // Login's forms/OAuth progress are inline, rather than pushed
+            // screens. Their entries still use the router's single Back action.
+            NavigationStack { tabRoot(for: tab) }
+        } else {
+            NavigationStack(path: navigation.binding(for: tab)) {
+                tabRoot(for: tab)
+                    .navigationDestination(for: AppRoute.self) { route in
+                        routeDestination(route)
+                    }
+            }
+        }
+    }
+
+    private func tabRoot(for tab: Tab) -> some View {
+        ZStack {
+            if tab != .lang && tab != .share { AppBG() }
+            destination(for: tab)
+        }
+        .navigationBarHidden(true)
+    }
+
+    // Register once at each stack root, outside lazy grids and retained parents.
+    @ViewBuilder
+    private func routeDestination(_ route: AppRoute) -> some View {
+        switch route {
+        case .stage(let id):
+            if let index = mvm.stages.firstIndex(where: { $0.id == id }) {
+                StageView(stage: $mvm.stages[index])
+            }
+        case .tajweedRules:
+            if let index = mvm.stageLessons.firstIndex(where: { $0.id == 51 }) {
+                StageView1(stage: $mvm.stageLessons[index])
+            }
+        case .lesson(let id):
+            if let index = mvm.stageLessons.firstIndex(where: { $0.id == id }) {
+                LessonView(lesson: $mvm.stageLessons[index])
+            }
+        case .recitation: RecitationView()
+        case .ql: QLView()
+        case .qlVocabulary: QLVocView()
+        case .qlExamples: QLExView()
+        case .tajweed: TajweedView()
+        case .tajweedExamples:
+            TajweedExView()
+                .environment(\.layoutDirection, getLanguage() == "Ar" ? .rightToLeft : .leftToRight)
+        case .infoPage: PageLayout()
+        case .downloads: DownloadLayout()
+        case .language: LanguageLayout()
+        case .share: ShareView()
+        case .account: EmptyView() // Rendered inline by LoginLayout.
+        }
+    }
+
     @ViewBuilder
     private func destination(for tab: Tab) -> some View {
         switch tab {
         case .home: HomeView()
         case .account: AccountView()
-        case .share: ShareView()
+        case .share: QuranShortcutView().id(currentLanguage)
         case .lang: LanguageLayout()
         case .more: MoreView()
+        }
+    }
+}
+
+// Own reader state keeps the Home tab's lesson, surah and back stack intact.
+private struct QuranShortcutView: View {
+    @EnvironmentObject private var mvm: MainViewModel
+    @StateObject private var reader = MainViewModel()
+    @State private var isPrepared = false
+
+    var body: some View {
+        Group {
+            if isPrepared {
+                RecitationView()
+                    .environmentObject(reader)
+            } else {
+                ProgressView()
+            }
+        }
+        .task(id: mvm.loading) {
+            guard !mvm.loading, !isPrepared,
+                  let stage = mvm.stages.first(where: { $0.id == 2 }),
+                  let lesson = mvm.lessons.first(where: { $0.StageID == 2 && $0.Number == 6 }) else { return }
+            reader.home = mvm.home
+            reader.listType = "recitation"
+            reader.listSelected = stage.copy()
+            reader.lessonSelected = lesson.copy()
+            reader.surahNames = mvm.surahNames
+            reader.surahNamesAr = mvm.surahNamesAr
+            reader.verse1 = mvm.verse1.map { $0.copy() }
+            reader.verseByVerse = mvm.verseByVerse.map { $0.copy() }
+            reader.recitationItems = reader.verse1
+            reader.loading = false
+            reader.recitationInitialLoad = false
+            isPrepared = true
         }
     }
 }
@@ -159,10 +314,11 @@ struct NavView: View {
 // tab. Intercept that one interaction through the native controller, keeping
 // SwiftUI's delegate in charge of all other tab events and transitions.
 private struct TabBarBackAction: UIViewControllerRepresentable {
+    var isArabic: Bool
     var onReselect: @MainActor (Int) -> Bool
 
     func makeCoordinator() -> Coordinator {
-        Coordinator(onReselect: onReselect)
+        Coordinator(isArabic: isArabic, onReselect: onReselect)
     }
 
     func makeUIViewController(context: Context) -> ObserverController {
@@ -174,6 +330,7 @@ private struct TabBarBackAction: UIViewControllerRepresentable {
     }
 
     func updateUIViewController(_ controller: ObserverController, context: Context) {
+        context.coordinator.isArabic = isArabic
         context.coordinator.onReselect = onReselect
         controller.resolveTabController()
     }
@@ -236,26 +393,36 @@ private struct TabBarBackAction: UIViewControllerRepresentable {
 
     @MainActor
     final class Coordinator: NSObject, UITabBarControllerDelegate {
+        var isArabic: Bool
         var onReselect: @MainActor (Int) -> Bool
         private weak var controller: UITabBarController?
+        private var handledBackIndex: Int?
+        private var navigationDirections: [NavigationDirectionState] = []
         // NSObject's selector queries are nonisolated; delegate changes and
         // action calls are confined to the main actor by this coordinator.
         nonisolated(unsafe) private var originalDelegate: UITabBarControllerDelegate?
 
-        init(onReselect: @escaping @MainActor (Int) -> Bool) {
+        init(isArabic: Bool, onReselect: @escaping @MainActor (Int) -> Bool) {
+            self.isArabic = isArabic
             self.onReselect = onReselect
             super.init()
         }
 
         func attach(to tabController: UITabBarController) {
-            guard controller !== tabController || tabController.delegate !== self else { return }
-            detach()
-            controller = tabController
-            originalDelegate = tabController.delegate
-            tabController.delegate = self
+            if controller !== tabController {
+                detach()
+                controller = tabController
+            }
+            if tabController.delegate !== self {
+                originalDelegate = tabController.delegate
+                tabController.delegate = self
+            }
+            // Reapply on language updates and when a lazy tab first lays out.
+            updateNavigationDirection(in: tabController)
         }
 
         func detach() {
+            restoreNavigationDirections()
             if let controller, controller.delegate === self {
                 controller.delegate = originalDelegate
             }
@@ -263,10 +430,104 @@ private struct TabBarBackAction: UIViewControllerRepresentable {
             originalDelegate = nil
         }
 
+        private func updateNavigationDirection(in tabController: UITabBarController) {
+            guard isArabic else {
+                restoreNavigationDirections()
+                return
+            }
+            navigationDirections.removeAll { $0.controller == nil }
+            for navigationController in navigationControllers(in: tabController) where navigationController.isViewLoaded {
+                let state: NavigationDirectionState
+                if let existing = navigationDirections.first(where: { $0.controller === navigationController }) {
+                    state = existing
+                } else {
+                    state = NavigationDirectionState(navigationController)
+                    navigationDirections.append(state)
+                }
+                state.applyArabicDirection()
+            }
+        }
+
+        private func restoreNavigationDirections() {
+            navigationDirections.forEach { $0.restore() }
+            navigationDirections.removeAll()
+        }
+
+        private func navigationControllers(in controller: UIViewController) -> [UINavigationController] {
+            if let navigationController = controller as? UINavigationController {
+                return [navigationController]
+            }
+            return controller.children.flatMap { navigationControllers(in: $0) }
+        }
+
+        // Scope RTL to the native navigation host. Keep UIKit's own animator,
+        // SwiftUI's navigation delegate, paths and content layout untouched.
+        @MainActor
+        private final class NavigationDirectionState {
+            weak var controller: UINavigationController?
+            private let viewSemantic: UISemanticContentAttribute
+            private let barSemantic: UISemanticContentAttribute
+            private weak var popGesture: UIScreenEdgePanGestureRecognizer?
+            private var popEdges: UIRectEdge?
+
+            init(_ controller: UINavigationController) {
+                self.controller = controller
+                viewSemantic = controller.view.semanticContentAttribute
+                barSemantic = controller.navigationBar.semanticContentAttribute
+            }
+
+            func applyArabicDirection() {
+                guard let controller else { return }
+                let gesture = controller.interactivePopGestureRecognizer as? UIScreenEdgePanGestureRecognizer
+                if popGesture !== gesture {
+                    restorePopEdge()
+                    popGesture = gesture
+                    popEdges = gesture?.edges
+                }
+                if controller.view.semanticContentAttribute != .forceRightToLeft {
+                    controller.view.semanticContentAttribute = .forceRightToLeft
+                }
+                if controller.navigationBar.semanticContentAttribute != .forceRightToLeft {
+                    controller.navigationBar.semanticContentAttribute = .forceRightToLeft
+                }
+                if let popGesture, popGesture.state != .began, popGesture.state != .changed,
+                   popGesture.edges != .right {
+                    popGesture.edges = .right
+                }
+            }
+
+            func restore() {
+                if let controller {
+                    if controller.view.semanticContentAttribute == .forceRightToLeft {
+                        controller.view.semanticContentAttribute = viewSemantic
+                    }
+                    if controller.navigationBar.semanticContentAttribute == .forceRightToLeft {
+                        controller.navigationBar.semanticContentAttribute = barSemantic
+                    }
+                }
+                restorePopEdge()
+            }
+
+            private func restorePopEdge() {
+                if let popGesture, let popEdges, popGesture.edges == .right {
+                    popGesture.edges = popEdges
+                }
+            }
+        }
+
+        private func handleBack(at index: Int) -> Bool {
+            if handledBackIndex == index { return true }
+            guard onReselect(index) else { return false }
+            handledBackIndex = index
+            DispatchQueue.main.async { [weak self] in self?.handledBackIndex = nil }
+            return true
+        }
+
         func tabBarController(_ tabBarController: UITabBarController, shouldSelect viewController: UIViewController) -> Bool {
-            if tabBarController.selectedViewController === viewController, onReselect(tabBarController.selectedIndex) {
-                // Keep the current tab and let the existing screen handler
-                // go back once, rather than letting UIKit pop to the root.
+            AppHaptics.tap()
+            if tabBarController.selectedViewController === viewController, handleBack(at: tabBarController.selectedIndex) {
+                // The router removed one entry; prevent UIKit reselection
+                // from also applying its default pop-to-root behavior.
                 return false
             }
             return originalDelegate?.tabBarController?(tabBarController, shouldSelect: viewController) ?? true
@@ -274,7 +535,8 @@ private struct TabBarBackAction: UIViewControllerRepresentable {
 
         @available(iOS 18.0, *)
         func tabBarController(_ tabBarController: UITabBarController, shouldSelectTab tab: UITab) -> Bool {
-            if tabBarController.selectedTab === tab, onReselect(tabBarController.selectedIndex) {
+            AppHaptics.tap()
+            if tabBarController.selectedTab === tab, handleBack(at: tabBarController.selectedIndex) {
                 return false
             }
             return originalDelegate?.tabBarController?(tabBarController, shouldSelectTab: tab) ?? true

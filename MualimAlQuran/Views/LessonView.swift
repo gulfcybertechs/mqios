@@ -3,6 +3,7 @@ import SwiftUI
 
 struct LessonView: View {
     
+    @AppStorage("language") var currentLanguage = getLanguage()
     @EnvironmentObject var mvm: MainViewModel
     @EnvironmentObject var sheetVM: BottomSheetViewModel
     @Binding var lesson: ListModel
@@ -12,8 +13,6 @@ struct LessonView: View {
     @State var activeLetter = 0
     @State var layoutPadding = 0.0
     @StateObject var player = Player()
-    
-    @Environment(\.dismiss) private var dismiss
     
     @State var safeArea = UIApplication.shared.firstKeyWindow?.safeAreaInsets
     
@@ -37,7 +36,7 @@ struct LessonView: View {
                                 Spacer().frame(height: 10)
                                 
                                 Text(mvm.home.Lesson + " " + mvm.lessonSelected.Sort.description)
-                                    .font(.custom("opensans", size: 22))
+                                    .font(currentLanguage == "Ar" ? .system(size: 22, weight: .bold) : .custom("opensans", size: 22))
                                     .bold()
                                     .lineSpacing(8)
                                     .multilineTextAlignment(.center)
@@ -47,7 +46,8 @@ struct LessonView: View {
                                     .padding(.trailing, 20)
                                 
                                 Text(mvm.lessonSelected.Title.replacingOccurrences(of: "<span>", with: "").replacingOccurrences(of: "</span>", with: ""))
-                                    .font(.custom("opensans", size: 20))
+                                    .font(currentLanguage == "Ar" ? .system(size: 20, weight: .regular) : .custom("opensans", size: 20))
+                                    .fontWeight(currentLanguage == "Ar" ? .regular : nil)
                                     .foregroundColor(colorResource.maroon)
                                     .lineSpacing(6)
                                     .multilineTextAlignment(.center)
@@ -56,6 +56,7 @@ struct LessonView: View {
                                     .padding(.trailing, 15)
                                 
                                 Button(action: { 
+                                    AppHaptics.tap()
                                     sheetVM.sheetState.toggle()
                                     sheetVM.title = lesson.Title
                                     sheetVM.summary = lesson.Summary
@@ -64,7 +65,7 @@ struct LessonView: View {
                                     ZStack {
                                         
                                         Text(mvm.home.Instructions)
-                                            .font(.custom("opensans", size: 20))
+                                            .font(currentLanguage == "Ar" ? .system(size: 20, weight: .regular) : .custom("opensans", size: 20))
                                             .foregroundColor(colorResource.maroon)
                                             .multilineTextAlignment(.leading)
                                             .frame(maxWidth: .infinity, alignment: .leading)
@@ -139,7 +140,7 @@ struct LessonView: View {
                                                                 Spacer().frame(height: 10)
                                                                 
                                                                 Text(separatorItem.title1.wrappedValue)
-                                                                    .font(.custom("philosopher", size: 32))
+                                                                    .font(currentLanguage == "Ar" ? .system(size: 32, weight: .regular) : .custom("philosopher", size: 32))
                                                                     .multilineTextAlignment(.center)
                                                                     .lineSpacing(6)
                                                                     .foregroundColor(colorResource.maroon)
@@ -193,19 +194,14 @@ struct LessonView: View {
                 .frame(maxWidth: .infinity)
             }
             .navigationBarHidden(true)
-            .clipped()
+            .clipShape(PageBottomOverflowClip(), style: FillStyle(antialiased: false))
             .ignoresSafeArea(.all, edges: [.top, .leading, .trailing])
             .onAppear {
-                mvm.viewLevel = "lesson"
-                mvm.back = false
+                if let insets = UIApplication.shared.firstKeyWindow?.safeAreaInsets {
+                    safeArea = insets
+                }
                 
                 layoutPadding = lessonLayoutPadding()
-            }
-            .task(id: mvm.backForce) {
-                if (mvm.backForce) { dismiss() }
-            }
-            .task(id: mvm.back) {
-                if (mvm.back) { mvm.back = false; dismiss(); }
             }
             .onRotate { newOrientation in
                 

@@ -62,8 +62,6 @@ struct AccountView: View {
         }
         .frame(maxWidth: .infinity)
         .onAppear() {
-            
-            mvm.viewLevel = mvm.accountViewLevel
             userID = getUser(type: "ID")
         }
     }

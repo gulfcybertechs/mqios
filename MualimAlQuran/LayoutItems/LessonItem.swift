@@ -31,7 +31,9 @@ struct LessonItem: View {
                 
             } else {
                 
-                Task {
+                let navigationRevision = AppNavigationAudio.revision
+                Task { @MainActor in
+                    guard AppNavigationAudio.revision == navigationRevision else { return }
                                                                 
                     if (activeLetter == item.id) {
                         
@@ -41,7 +43,7 @@ struct LessonItem: View {
                         
                         activeLetter = item.id
                         
-                        alert = await letterPlay(lesson: mvm.lessonSelected, item: item, player: player)
+                        alert = await letterPlay(lesson: mvm.lessonSelected, item: item, player: player, navigationRevision: navigationRevision)
                     }
                 }
             }

@@ -2,12 +2,13 @@ import SwiftUI
 
 struct TajweedView: View {
     
+    @EnvironmentObject var navigation: AppNavigationRouter
+    @AppStorage("language") var currentLanguage = getLanguage()
     @EnvironmentObject var mvm: MainViewModel
     @State var activeLetter = -1
     @State var layoutPadding = 0.0
     @State var itemSpacing = 0.0
     @State var player = Player()
-    @Environment(\.dismiss) private var dismiss
     
     @State var safeArea = UIApplication.shared.firstKeyWindow?.safeAreaInsets
     
@@ -26,7 +27,7 @@ struct TajweedView: View {
                         //region Header
                         Spacer().frame(height: 10)
                         Text(mvm.home.Lesson + " " + mvm.lessonSelected.Number.description)
-                            .font(.custom("opensans", size: 22))
+                            .font(currentLanguage == "Ar" ? .system(size: 22, weight: .bold) : .custom("opensans", size: 22))
                             .bold()
                             .lineSpacing(8)
                             .multilineTextAlignment(.center)
@@ -36,7 +37,8 @@ struct TajweedView: View {
                             .padding(.trailing, 20)
                         
                         Text(mvm.lessonSelected.Title.components(separatedBy: "<span>")[0].description)
-                            .font(.custom("opensans", size: 20))
+                            .font(currentLanguage == "Ar" ? .system(size: 20, weight: .regular) : .custom("opensans", size: 20))
+                            .fontWeight(currentLanguage == "Ar" ? .regular : nil)
                             .foregroundColor(colorResource.maroon)
                             .lineSpacing(6)
                             .multilineTextAlignment(.center)
@@ -72,12 +74,12 @@ struct TajweedView: View {
         }
         .navigationBarHidden(true)
         .frame(maxWidth: .infinity)
-        .clipped()
+        .clipShape(PageBottomOverflowClip(), style: FillStyle(antialiased: false))
         .ignoresSafeArea(.all, edges: [.top, .leading, .trailing])
         .onAppear {
-            
-            mvm.viewLevel = "tajweed"
-            mvm.back = false
+            if let insets = UIApplication.shared.firstKeyWindow?.safeAreaInsets {
+                safeArea = insets
+            }
             
             layoutPadding = mainLayoutPadding(items: mvm.stageLessons)
             itemSpacing = listItemSpacing(items: mvm.stageLessons)
@@ -88,12 +90,6 @@ struct TajweedView: View {
                 activeLetter = -1
             }
         })
-        .task(id: mvm.backForce) {
-            if (mvm.backForce) { dismiss() }
-        }
-        .task(id: mvm.back) {
-            if (mvm.back) { mvm.back = false; dismiss(); }
-        }
         .onRotate { newOrientation in
             
             Task {

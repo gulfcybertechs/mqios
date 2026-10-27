@@ -2,11 +2,12 @@ import SwiftUI
 
 struct StageView1: View {
     
+    @EnvironmentObject var navigation: AppNavigationRouter
+    @AppStorage("language") var currentLanguage = getLanguage()
     @EnvironmentObject var mvm: MainViewModel
     @Binding var stage: ListModel    
     @State var layoutPadding = 0.0
     @State var itemSpacing = 0.0
-    @Environment(\.dismiss) private var dismiss
     
     @State var safeArea = UIApplication.shared.firstKeyWindow?.safeAreaInsets
     
@@ -25,7 +26,7 @@ struct StageView1: View {
                         Spacer().frame(height: 10)
                         
                         Text(mvm.listSelected1.Title.replacingOccurrences(of: "<span>", with: "").replacingOccurrences(of: "</span>", with: ""))
-                            .font(.custom("opensans", size: 22))
+                            .font(currentLanguage == "Ar" ? .system(size: 22, weight: .bold) : .custom("opensans", size: 22))
                             .bold()
                             .lineSpacing(8)
                             .multilineTextAlignment(.center)
@@ -35,7 +36,7 @@ struct StageView1: View {
                             .padding(.trailing, 20)
                         
                         Text(mvm.listSelected1.Summary.replacingOccurrences(of: "<span>", with: "").replacingOccurrences(of: "</span>", with: ""))
-                            .font(.custom("opensans", size: 20))
+                            .font(currentLanguage == "Ar" ? .system(size: 20, weight: .regular) : .custom("opensans", size: 20))
                             .foregroundColor(colorResource.maroon)
                             .lineSpacing(6)
                             .multilineTextAlignment(.center)
@@ -96,14 +97,14 @@ struct StageView1: View {
                                                     if (item.wrappedValue.Number == 25) {
                                                         
                                                         Button (action: {
+                                                            AppHaptics.tap()
                                                             
                                                             mvm.lessonSelected = item.wrappedValue
                                                             mvm.tajweedSelectedSetup = mvm.tajweedSetup.first { $0.id == mvm.lessonSelected.Number }!
                                                             mvm.loadTajweedExItems()
-                                                            mvm.stage1NavSelection = item.id
+                                                            navigation.push(.tajweedExamples, in: .home)
                                                             
                                                         }) {
-                                                            NavigationLink(destination: TajweedExView(), tag: item.id, selection: $mvm.stage1NavSelection) { }
                                                             ListItem(item: item)
                                                         }
                                                         
@@ -111,14 +112,14 @@ struct StageView1: View {
                                                     else {
                                                         
                                                         Button (action: {
+                                                            AppHaptics.tap()
                                                             
                                                             mvm.lessonSelected = item.wrappedValue
                                                             mvm.tajweedSelectedSetup = mvm.tajweedSetup.first { $0.id == mvm.lessonSelected.Number }!
                                                             mvm.loadTajweedItems()
-                                                            mvm.stage1NavSelection = item.id
+                                                            navigation.push(.tajweed, in: .home)
                                                             
                                                         }) {
-                                                            NavigationLink(destination: TajweedView(), tag: item.id, selection: $mvm.stage1NavSelection) { }
                                                             ListItem(item: item)
                                                         }
                                                         
@@ -143,21 +144,15 @@ struct StageView1: View {
         }
         .navigationBarHidden(true)
         .frame(maxWidth: .infinity)
-        .clipped()
+        .clipShape(PageBottomOverflowClip(), style: FillStyle(antialiased: false))
         .ignoresSafeArea(.all, edges: [.top, .leading, .trailing])
         .onAppear {
-
-            mvm.viewLevel = "stage1"
-            mvm.back = false
+            if let insets = UIApplication.shared.firstKeyWindow?.safeAreaInsets {
+                safeArea = insets
+            }
             
             layoutPadding = mainLayoutPadding(items: mvm.stageLessonsTajweed)
             itemSpacing = listItemSpacing(items: mvm.stageLessonsTajweed)
-        }
-        .task(id: mvm.backForce) {
-            if (mvm.backForce) { dismiss() }
-        }
-        .task(id: mvm.back) {
-            if (mvm.back) { mvm.back = false; dismiss(); }
         }
         .onRotate { newOrientation in
             

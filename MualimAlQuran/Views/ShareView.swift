@@ -2,6 +2,7 @@ import SwiftUI
 
 struct ShareView: View {
     
+    @AppStorage("language") var currentLanguage = getLanguage()
     @EnvironmentObject var mvm: MainViewModel
     
     var body: some View {
@@ -18,16 +19,16 @@ struct ShareView: View {
                         Spacer().frame(height: 40)
                         
                         Text(mvm.home.Share)
-                            .font(.custom("opensans", size: 28))
-                            .fontWeight(.medium)
+                            .font(currentLanguage == "Ar" ? .system(size: 28, weight: .bold) : .custom("opensans", size: 28))
+                            .fontWeight(currentLanguage == "Ar" ? .bold : .medium)
                             .foregroundStyle(.black)
                             .multilineTextAlignment(.center)
                             .frame(maxWidth: .infinity, alignment: .center)
                             .padding(.bottom, 5)
                         
                         Text(mvm.home.ShareSummary)
-                            .font(.custom("opensans", size: 18))
-                            .fontWeight(.medium)
+                            .font(currentLanguage == "Ar" ? .system(size: 18, weight: .regular) : .custom("opensans", size: 18))
+                            .fontWeight(currentLanguage == "Ar" ? .regular : .medium)
                             .foregroundStyle(colorResource.maroon)
                             .multilineTextAlignment(.center)
                             .frame(maxWidth: .infinity, alignment: .center)
@@ -64,8 +65,8 @@ struct ShareView: View {
                 }
             }
         }
-        .onAppear() {
-            mvm.viewLevel = "share"
+        .background {
+            AppBG()
         }
     }
 }

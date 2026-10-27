@@ -4,7 +4,6 @@ import SwiftSoup
 struct DownloadLayout: View {
     
     @EnvironmentObject var mvm: MainViewModel
-    @Environment(\.dismiss) private var dismiss
     @State var clearAllAlert = false
     
     var audioHelper: AudioHelper = AudioHelper(player: .constant(Player()))
@@ -27,8 +26,8 @@ struct DownloadLayout: View {
                         Spacer().frame(height: 40)
                         
                         Text(mvm.pageSelected.Title)
-                            .font(.custom("opensans", size: 26))
-                            .fontWeight(.medium)
+                            .font(currentLanguage == "Ar" ? .system(size: 26, weight: .bold) : .custom("opensans", size: 26))
+                            .fontWeight(currentLanguage == "Ar" ? .bold : .medium)
                             .foregroundStyle(.black)
                             .multilineTextAlignment(.center)
                             .frame(maxWidth: .infinity, alignment: .leading)
@@ -131,9 +130,12 @@ struct DownloadLayout: View {
         .padding(.trailing, 15)
         .navigationBarHidden(true)
         .frame(maxWidth: .infinity)
-        .clipped()
+        .clipShape(PageBottomOverflowClip(), style: FillStyle(antialiased: false))
         .ignoresSafeArea(.all, edges: [.top, .leading, .trailing])
         .onAppear {
+            if let insets = UIApplication.shared.firstKeyWindow?.safeAreaInsets {
+                safeArea = insets
+            }
             
             if (mvm.downloadItems.isEmpty) {
                 
@@ -144,13 +146,6 @@ struct DownloadLayout: View {
             }
             
             audioHelper.prepareRecitationDir()
-            
-            mvm.viewLevel = "download"
-            mvm.back = false
-        }
-        .task(id: mvm.back) {
-            //mvm.downloadItems.removeAll()
-            if (mvm.back) { mvm.back = false; dismiss(); }
         }
         .onRotate { newOrientation in
             

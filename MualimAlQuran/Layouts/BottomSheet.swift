@@ -20,6 +20,7 @@ struct BottomSheet: View {
                     
                     Text(sheetVM.title.replacingOccurrences(of: "<span>", with: "\n").replacingOccurrences(of: "</span>", with: ""))
                         .font(.system(size: 22))
+                        .fontWeight(currentLanguage == "Ar" ? .bold : nil)
                         .foregroundColor(colorResource.maroon)
                         .frame(alignment: .bottom)
                 }
@@ -75,6 +76,9 @@ struct BottomSheet: View {
             }
             
             Spacer()
+        }
+        .onReceive(NotificationCenter.default.publisher(for: .appNavigationBack)) { _ in
+            player.pause()
         }
         .padding(20)
         .environment(\.layoutDirection, (currentLanguage == "Ar") ? .rightToLeft : .leftToRight)

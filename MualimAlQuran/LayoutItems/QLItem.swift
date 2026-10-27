@@ -2,12 +2,12 @@ import SwiftUI
 
 struct QLItem: View {
     
+    @EnvironmentObject var navigation: AppNavigationRouter
     @EnvironmentObject var mvm: MainViewModel
     @Binding var item: QLModel    
     @Binding var activeItem: Int
     @Binding var activeLetter: Int
     @Binding var player: Player
-    @State var navSelection: Int? = nil
     @State var text = ""
     
     @State var text1 = "Singular"
@@ -62,6 +62,7 @@ struct QLItem: View {
                         
                         Button(action: {
                             
+                            AppHaptics.tap()
                             if (activeItem == item.id) {
                                 activeItem = -1
                             } else {
@@ -478,12 +479,12 @@ struct QLItem: View {
                 
                 Button(action: {
                     
+                    AppHaptics.tap()
                     mvm.loadQLVocItems(mvm: mvm)
-                    navSelection = 0
+                    navigation.push(.qlVocabulary, in: .home)
                     
                 }) {
                     
-                    NavigationLink(destination: QLVocView(), tag: 0, selection: $navSelection) { }
                     
                     HStack()
                     {
@@ -517,12 +518,12 @@ struct QLItem: View {
                 
                 Button(action: {
                     
+                    AppHaptics.tap()
                     mvm.loadQLExItems(mvm: mvm)
-                    navSelection = 1
+                    navigation.push(.qlExamples, in: .home)
                     
                 }) {
                     
-                    NavigationLink(destination: QLExView(), tag: 1, selection: $navSelection) { }
                     
                     HStack()
                     {

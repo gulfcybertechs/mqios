@@ -539,43 +539,38 @@ struct AudioHelper {
         }
     }
     
-    func downloadVerse(fileName: String, url: URL, callback: (() -> ())?) {
-        
-        if (!fileExist(name: fileName)) {
-            
-            Task.detached {
-                
-                let downloadTask = URLSession.shared.downloadTask(with: url) {
-                    urlOrNil, responseOrNil, errorOrNil in
-                    // check for and handle errors:
-                    // * errorOrNil should be nil
-                    // * responseOrNil should be an HTTPURLResponse with statusCode in 200..<299
-                    
-                    guard let fileURL = urlOrNil else { return }
-                    do {
-                        let documentsURL = try
-                        FileManager.default.url(for: .documentDirectory,
-                                                in: .userDomainMask,
-                                                appropriateFor: nil,
-                                                create: false)
-                        let savedURL = documentsURL.appendingPathComponent(fileName)
-                        try FileManager.default.moveItem(at: fileURL, to: savedURL)
-                        
-                        callback?()
-                        
-                    } catch {
-                        print ("file error: \(error)")
-                    }
-                }
-                downloadTask.resume()
-            }
-        }
-        else {
-            
+    @MainActor
+    func downloadVerse(fileName: String, url: URL, callback: (@MainActor @Sendable () -> Void)?) {
+        let navigationRevision = AppNavigationAudio.revision
+        let complete: @MainActor @Sendable () -> Void = {
+            guard AppNavigationAudio.revision == navigationRevision else { return }
             callback?()
         }
+        let savedURL = filePath(name: fileName)
+        if (!fileExist(name: fileName)) {
+            // URLSession starts asynchronously; its file callback captures only
+            // the destination URL and a main-actor completion, never the player binding.
+            let downloadTask = URLSession.shared.downloadTask(with: url) {
+                urlOrNil, responseOrNil, errorOrNil in
+                guard let fileURL = urlOrNil else { return }
+                do {
+                    try FileManager.default.moveItem(at: fileURL, to: savedURL)
+                    DispatchQueue.main.async { complete() }
+                } catch {
+                    // Another request for the same verse may have saved it first.
+                    if FileManager.default.fileExists(atPath: savedURL.relativePath) {
+                        DispatchQueue.main.async { complete() }
+                    } else {
+                        print("file error: \(error)")
+                    }
+                }
+            }
+            downloadTask.resume()
+        } else {
+            complete()
+        }
     }
-    
+
     func playVerse(audioFileName: String, callback: (() -> ())? = nil) {
 
         //let url = Bundle.main.(forResource: audioFileName.replacingOccurrences(of: ".mp3", with: ""), ofType: "mp3")

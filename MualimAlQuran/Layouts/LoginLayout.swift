@@ -40,6 +40,7 @@ struct LoginLayout: View {
     var callback : ((UserResponse) -> Void)? = nil
     @AppStorage("language") var currentLanguage = getLanguage()
     
+    @EnvironmentObject var navigation: AppNavigationRouter
     @EnvironmentObject var mvm: MainViewModel
     @StateObject var rh = ResponseHandler()
     
@@ -83,16 +84,16 @@ struct LoginLayout: View {
                     Spacer().frame(height: 40)
                     
                     Text(title)
-                        .font(.custom("opensans", size: 28))
-                        .fontWeight(.medium)
+                        .font(currentLanguage == "Ar" ? .system(size: 28, weight: .bold) : .custom("opensans", size: 28))
+                        .fontWeight(currentLanguage == "Ar" ? .bold : .medium)
                         .foregroundStyle(.black)
                         .multilineTextAlignment(.center)
                         .frame(maxWidth: .infinity, alignment: .center)
                         .padding(.bottom, 5)
                     
                     Text(summary)
-                        .font(.custom("opensans", size: 18))
-                        .fontWeight(.medium)
+                        .font(currentLanguage == "Ar" ? .system(size: 18, weight: .regular) : .custom("opensans", size: 18))
+                        .fontWeight(currentLanguage == "Ar" ? .regular : .medium)
                         .foregroundStyle(colorResource.maroon)
                         .multilineTextAlignment(.center)
                         .frame(maxWidth: .infinity, alignment: .center)
@@ -210,7 +211,7 @@ struct LoginLayout: View {
                                                 Apis.validateResponse(mvm: mvm, type: "create", model: model, rh: rh) { it in
                                                     
                                                     clearFields()
-                                                    mvm.accountBack = true
+                                                    navigation.returnToRoot(in: .account)
                                                     
                                                     callback!(it)
                                                 }
@@ -284,8 +285,7 @@ struct LoginLayout: View {
                                             } else {
                                                 forgotPassword = true
                                                 rh.submitText = mvm.home.Submit
-                                                mvm.viewLevel = "forgot"
-                                                mvm.accountViewLevel = "forgot"
+                                                navigation.showAccountPage(.forgot)
                                             }
                                         }
                                     )
@@ -311,7 +311,7 @@ struct LoginLayout: View {
                     
                     if (rh.error) {
                         
-                        Text(rh.errorMessage)
+                        Text(rh.errorMessage.replacingOccurrences(of: "PasswordHash", with: "Password"))
                             .foregroundStyle(colorResource.danger)
                             .frame(maxWidth: .infinity)
                             .padding(15)
@@ -349,8 +349,7 @@ struct LoginLayout: View {
                                     
                                     googleSignin = true
                                     summary = (currentLanguage == "Ar") ? "تسجيل الدخول مع جوجل" : "Signing in with Google"
-                                    mvm.viewLevel = "google"
-                                    mvm.accountViewLevel = "google"
+                                    navigation.showAccountPage(.google)
                                     
                                     let vc:UIViewController = (UIApplication.shared.firstKeyWindow?.rootViewController)!
                                     
@@ -391,7 +390,7 @@ struct LoginLayout: View {
                                                 Apis.validateResponse(mvm: mvm, type: "create", model: model, rh: rh) { it in
                                                     
                                                     clearFields()
-                                                    mvm.accountBack = true
+                                                    navigation.returnToRoot(in: .account)
                                                     
                                                     callback!(it)
                                                 }
@@ -412,7 +411,7 @@ struct LoginLayout: View {
                                 
                                 Image("google").resizable().aspectRatio(contentMode: .fit).frame(width:30)
                                 
-                                Text((currentLanguage == "Ar") ? "تسجيل الدخول مع جوجل" : "Sign in with Google")
+                                Text((currentLanguage == "Ar") ? "تسجيل الدخول باستخدام Google" : "Sign in with Google")
                                 
                                 if (googleSignin && !rh.submitEnabled) {
                                     
@@ -424,11 +423,13 @@ struct LoginLayout: View {
                             .padding([.top, .bottom], 6)
                             .padding(.leading, 10)
                             .padding(.trailing, 15)
+                            .frame(maxWidth: .infinity)
+                            .frame(height: 45)
                         }
                         .scaleEffect(1)
                         .foregroundColor(colorResource.lightButtonText)
                         .background(Color(hex: "F1F1F1"))
-                        .cornerRadius(20)
+                        .cornerRadius(10)
                     }
                     //endregion
                     
@@ -449,8 +450,7 @@ struct LoginLayout: View {
                             rh.reset(mvm: mvm)
                             appleSignin = true
                             summary = (currentLanguage == "Ar") ? "تسجيل الدخول مع آبل" : "Signing in with Apple"
-                            mvm.viewLevel = "apple"
-                            mvm.accountViewLevel = "apple"
+                            navigation.showAccountPage(.apple)
                             
                             request.requestedScopes = [.fullName, .email]
                             
@@ -534,7 +534,7 @@ struct LoginLayout: View {
                                                 DispatchQueue.main.async {
                                                     
                                                     clearFields()
-                                                    mvm.accountBack = true
+                                                    navigation.returnToRoot(in: .account)
                                                     
                                                     callback!(it)
                                                 }
@@ -552,7 +552,7 @@ struct LoginLayout: View {
                                                 DispatchQueue.main.async {
                                                     
                                                     clearFields()
-                                                    mvm.accountBack = true
+                                                    navigation.returnToRoot(in: .account)
                                                     
                                                     callback!(it)
                                                 }
@@ -580,8 +580,10 @@ struct LoginLayout: View {
                             }
                         }
                         .clipShape(RoundedRectangle(cornerRadius: 10))
-                        .frame(width: 300, height: 45)
+                        .frame(maxWidth: .infinity)
+                        .frame(height: 45)
                         .signInWithAppleButtonStyle(.black)
+                        .modifier(ArabicAppleSignInLabel(isArabic: currentLanguage == "Ar"))
                     }
                     //endregion
                     
@@ -605,16 +607,20 @@ struct LoginLayout: View {
                                 } else {
                                     createAccount = true
                                     rh.submitText = mvm.home.Submit
-                                    mvm.viewLevel = "create"
-                                    mvm.accountViewLevel = "create"
+                                    navigation.showAccountPage(.create)
                                 }
                             }
                         ) {
                             HStack {
                                 Text(mvm.home.LoginFooter)
+                                    .font(.system(size: 19))
+                                    .lineLimit(1)
+                                    .minimumScaleFactor(0.8)
                             }
                             .padding([.top, .bottom], 12)
                             .padding([.leading, .trailing], 30)
+                            .frame(maxWidth: .infinity)
+                            .frame(height: 45)
                         }
                         .scaleEffect(1)
                         .foregroundColor(colorResource.lightButtonText)
@@ -627,14 +633,14 @@ struct LoginLayout: View {
                 .padding(.trailing, 15)
                 .onAppear() {
                     
-                    if (mvm.accountViewLevel == "account") {
+                    if !navigation.canGoBack(in: .account) {
                         title = mvm.home.Login
                         summary = mvm.home.LoginSummary
                         rh.submitText = mvm.home.Login
                     }
                 }
-                .task(id: mvm.accountBack) {
-                    if (mvm.accountBack) {
+                .onChange(of: navigation.path(for: .account)) { old, next in
+                    if !old.isEmpty && next.isEmpty {
                         
                         forgotPassword = false
                         createAccount = false
@@ -649,12 +655,41 @@ struct LoginLayout: View {
                         title = mvm.home.Login
                         summary = mvm.home.LoginSummary                        
                         
-                        mvm.viewLevel = "account"
-                        mvm.accountViewLevel = "account"
-                        mvm.accountBack = false
                     }
                 }
             }
+        }
+    }
+}
+
+// Keep the native authorization control and callbacks; localize only its Arabic face.
+private struct ArabicAppleSignInLabel: ViewModifier {
+    let isArabic: Bool
+
+    @ViewBuilder
+    func body(content: Content) -> some View {
+        if isArabic {
+            content
+                .overlay {
+                    HStack(spacing: 6) {
+                        Image(systemName: "apple.logo")
+                        Text("تسجيل الدخول باستخدام Apple")
+                            .lineLimit(1)
+                            .minimumScaleFactor(0.8)
+                    }
+                    .font(.system(size: 19, weight: .medium))
+                    .foregroundStyle(.white)
+                    .padding(.horizontal, 16)
+                    .frame(maxWidth: .infinity, maxHeight: .infinity)
+                    .background(Color.black)
+                    .clipShape(RoundedRectangle(cornerRadius: 10))
+                    .environment(\.layoutDirection, .rightToLeft)
+                    .allowsHitTesting(false)
+                    .accessibilityHidden(true)
+                }
+                .accessibilityLabel(Text("تسجيل الدخول باستخدام Apple"))
+        } else {
+            content
         }
     }
 }

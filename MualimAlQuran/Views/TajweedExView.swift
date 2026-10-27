@@ -8,7 +8,6 @@ struct TajweedExView: View {
     @State var itemSpacing = 0.0
     @State var player = Player()
     @State var audioHelper: AudioHelper = AudioHelper(player: .constant(Player()))
-    @Environment(\.dismiss) private var dismiss
     @AppStorage("language") var currentLanguage = getLanguage()
     @State var safeArea = UIApplication.shared.firstKeyWindow?.safeAreaInsets
     
@@ -27,7 +26,7 @@ struct TajweedExView: View {
                         //region Header
                         Spacer().frame(height: 10)
                         Text(mvm.home.Lesson + " " + mvm.lessonSelected.Number.description)
-                            .font(.custom("opensans", size: 22))
+                            .font(currentLanguage == "Ar" ? .system(size: 22, weight: .bold) : .custom("opensans", size: 22))
                             .bold()
                             .lineSpacing(8)
                             .multilineTextAlignment(.center)
@@ -46,7 +45,8 @@ struct TajweedExView: View {
                         }
                         
                         Text(mvm.lessonSelected.Title.components(separatedBy: "<span>")[0].description)
-                            .font(.custom("opensans", size: 20))
+                            .font(currentLanguage == "Ar" ? .system(size: 20, weight: .regular) : .custom("opensans", size: 20))
+                            .fontWeight(currentLanguage == "Ar" ? .regular : nil)
                             .foregroundColor(colorResource.maroon)
                             .lineSpacing(6)
                             .multilineTextAlignment(.center)
@@ -153,14 +153,14 @@ struct TajweedExView: View {
         }
         .navigationBarHidden(true)
         .frame(maxWidth: .infinity)
-        .clipped()
+        .clipShape(PageBottomOverflowClip(), style: FillStyle(antialiased: false))
         .ignoresSafeArea(.all, edges: [.top, .leading, .trailing])
         .onAppear {
+            if let insets = UIApplication.shared.firstKeyWindow?.safeAreaInsets {
+                safeArea = insets
+            }
             
             audioHelper = AudioHelper(player: $player)
-            
-            mvm.viewLevel = "tajweedEx"
-            mvm.back = false
             
             layoutPadding = mainLayoutPadding(items: mvm.stageLessons)
             itemSpacing = listItemSpacing(items: mvm.stageLessons)
@@ -171,12 +171,6 @@ struct TajweedExView: View {
                 activeLetter = -1
             }
         })
-        .task(id: mvm.backForce) {
-            if (mvm.backForce) { dismiss() }
-        }
-        .task(id: mvm.back) {
-            if (mvm.back) { mvm.back = false; dismiss(); }
-        }
         .onRotate { newOrientation in
             
             Task {
